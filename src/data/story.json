@@ -1,9 +1,0 @@
-    name: "hello",
-    label: "Welcome to Idle Hero! In this game blah de blah blah blah",
-    type: "dialogue",
-    options: [
-      { name: "bleh", label: "option 1", goto: "bacon" },
-      { name: "bleh", label: "option 2", goto: "bacon" },
-      { name: "bleh", label: "option 3", goto: "bacon" }
-    ]
-

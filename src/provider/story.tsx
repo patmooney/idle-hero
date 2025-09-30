@@ -1,5 +1,5 @@
 import { createContext, Accessor, ParentComponent, createSignal, JSXElement } from "solid-js";
-import { IEncounter, IItem, IOption, IPlayer, IPlayerStats, ISkill, IStory, StoryType } from "../data/types";
+import { IEncounter, IItem, IOption, IPlayer, IPlayerStats, ISkill, IStats, IStory, StoryType } from "../data/types";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
 import storyData from "../data/story";
@@ -9,6 +9,12 @@ import actionData from "../data/action";
 export const DEFAULT_STORY = "story_town_1";
 export const BASE_ATTACK_DELAY = 25;
 export const MAX_INVENT = 20;
+export const LEVEL_EXP_BASE = 80;
+export const LEVEL_EXPONENT = 1.7;
+
+export const levelsXP = new Array(99 * 5).fill(1).map(
+  (_, idx) => Math.floor(LEVEL_EXP_BASE * Math.pow(idx + 1, LEVEL_EXPONENT))
+);
 
 export class Story implements IStory {
   name: string;
@@ -76,8 +82,11 @@ export class Player implements IPlayer {
     weaponMastery(): string {
       return "";
     }
-    getMasteryPerk(_: string): any {
-      return {};
+    getMasteryPerk(_: string): IStats {
+      return {
+        attMin: 0,
+        attMax: 0
+      }
     }
 
     attackDamage(): [number, number] {
@@ -86,8 +95,8 @@ export class Player implements IPlayer {
       
       const masteryType = this.weaponMastery();
       const perk = this.getMasteryPerk(masteryType);
-      totalEqMin += perk?.attack_min ?? 0;
-      totalEqMax += perk?.attack_max ?? 0;
+      totalEqMin += perk?.attMin ?? 0;
+      totalEqMax += perk?.attMax ?? 0;
 
       const strRatio = 1 + Math.pow((this.stats.strength ?? 0) / 100, 0.7);
       const min = Math.round(totalEqMin * strRatio);

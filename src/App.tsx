@@ -6,6 +6,7 @@ import { Story_Dialogue } from './components/story-dialogue';
 import { Action_Encounter } from './components/action-encounter';
 import { Story_Invent } from './components/story-invent';
 import {createStore} from 'solid-js/store';
+import {getLevel, getProgress} from './utils/levels';
 
 type ContextScreen = "story" | "invent" | "stats" | "skills";
 
@@ -17,7 +18,8 @@ function App() {
       <StoryProvider>
         <Commander>
           <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
-            <div class="h-2/10 bg-gray-400 p-2">
+            <div class="h-2/10 bg-gray-400">
+              <Overview />
               <ActionView />
             </div>
             <div class="h-1/10">
@@ -52,7 +54,7 @@ export const ActionView: Component = () => {
   return (
     <Switch>
       <Match when={ctx?.story().type === "dialogue"}>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 p-1">
           <div class="bg-black">Story</div>
           <div class="text-black whitespace-pre-wrap">{ctx?.story().label}</div>
         </div>
@@ -138,6 +140,17 @@ export const Log: Component = () => {
           )
         }</For>
       </div>
+    </div>
+  );
+};
+
+const Overview: Component = () => {
+  const ctx = useContext(StoryContext);
+  return (
+    <div class="flex flex-row bg-black px-1 justify-between">
+      <div class="text-red-500">HP {ctx?.player.stats.health}/{ctx?.player.stats.maxHealth}</div>
+      <div class="text-yellow-500">Gold {ctx?.player.stats.gold}</div>
+      <div class="text-green-500">Lvl {getLevel(ctx?.player.stats.experience ?? 0)} ({(getProgress(ctx?.player.stats.experience ?? 0) * 100).toFixed(0)}%)</div>
     </div>
   );
 };

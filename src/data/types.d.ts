@@ -4,6 +4,7 @@ export interface IEncounter {
     health: number;
     chance: number;
     drops?: IDrop[];
+    experience?: number;
 }
 
 export interface IItem {
@@ -62,4 +63,11 @@ export type IPlayerStats = IAttributes & IStats;
 export interface IPlayer {
     stats: IPlayerStats;
     equipment: IItem[];
+}
+
+export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff";
+
+export interface IMastery {
+    type: MasteryType;
+    experience?: number;
 }

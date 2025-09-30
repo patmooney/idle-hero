@@ -57,6 +57,9 @@ export const Action_Encounter: Component = () => {
       );
       setCount(count() + 1);
       setEncounter(undefined);
+      if (enc.experience) {
+        ctx?.onAddStat("experience", enc.experience);
+      }
       const drops = story.getDrops(enc);
       if (drops?.length) {
         drops.forEach((drop) => ctx?.addInventory(drop))
@@ -75,7 +78,7 @@ export const Action_Encounter: Component = () => {
   };
 
   return (
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1 p-1">
       <div class="bg-black">
         Attacking ({count()})
       </div>
