@@ -1,6 +1,6 @@
 import { IStory } from "../types";
 
-const begin: IStory[] = [
+const story: IStory[] = [
     {
         name: "story_town_1",
         label: "You are in town",
@@ -14,7 +14,8 @@ const begin: IStory[] = [
         label: "A farmer approaches you...\n*Hick*\nFeel free to beat up on some scarecrows. I'll buy any hay you find!",
         type: "dialogue",
         options: [
-            { label: "Fight scarecrows", goto: "story_scarecrows_1" }
+            { label: "Fight scarecrows", goto: "story_scarecrows_1" },
+            { label: "Sell Hay", action: "action_sell_hay_1" }
         ]
     },
     {
@@ -25,10 +26,14 @@ const begin: IStory[] = [
             {
                 name: "enc_scarecrow_1",
                 label: "Scarecrow",
-                health: 10
+                health: 10,
+                chance: 1,
+                drops: [
+                    { name: "hay_1", chance: 1 }
+                ]
             }
         ]
     }
 ];
 
-export default begin;
+export default story;

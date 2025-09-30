@@ -5,7 +5,12 @@ import { IOption } from "../data/types";
 export const Story_Dialogue: Component = () => {
   const ctx = useContext(StoryContext);
   const onClick = (option: IOption) => {
-    ctx?.navigate(option.goto);
+    if (option.goto) {
+      return ctx?.onNavigate(option.goto);
+    }
+    if (option.action) {
+      return ctx?.onAction(option.action);
+    }
   }
   return (
     <div class="flex flex-col gap-5 pt-5">
