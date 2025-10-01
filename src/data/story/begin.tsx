@@ -3,15 +3,28 @@ import { IStory } from "../types";
 const story: IStory[] = [
   {
     name: "story_town_1",
-    label: "You are in town",
+    label: "Town",
+    description: "You are in town",
     type: "dialogue",
     options: [
       { label: "Visit Farm", goto: "story_farmer_1" },
+      { label: "Home", goto: "story_home_1" },
+    ]
+  },
+  {
+    name: "story_home_1",
+    label: "Home",
+    description: "Home sweet home",
+    type: "dialogue",
+    options: [
+      { label: "Build", goto: "story_home_2" },
+      { label: "Stash", goto: "story_home_3" }
     ]
   },
   {
     name: "story_farmer_1",
-    label: "A farmer approaches you...\n*Hick*\nFeel free to beat up on some scarecrows. I'll buy any hay you find!",
+    label: "Farm",
+    description: "A farmer approaches you...\n*Hick*\nFeel free to beat up on some scarecrows. I'll buy any hay you find!",
     type: "dialogue",
     options: [
       { label: "Fight scarecrows", goto: "story_scarecrows_1" },
@@ -20,7 +33,8 @@ const story: IStory[] = [
   },
   {
     name: "story_scarecrows_1",
-    label: "Fighting scarecrows",
+    label: "Scarecrows",
+    description: "Fighting scarecrows",
     type: "encounter",
     encounters: [
       {
@@ -30,7 +44,8 @@ const story: IStory[] = [
         chance: 1,
         experience: 50,
         drops: [
-          { name: "hay_1", chance: 1 }
+          { name: "hay_1", chance: 1 },
+          { name: "recipe_hay_hand_1", chance: 1 },
         ]
       }
     ]

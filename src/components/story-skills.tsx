@@ -5,8 +5,10 @@ import {MasteryType} from "../data/types";
 import {getLevel, getProgress, masteryXP} from "../utils/levels";
 import {Progress} from "./ticker";
 
+import itemData from "../data/item";
+
 export const Story_Skills: Component = () => {
-  const [view, setView] = createSignal<"skills" | "mastery">("mastery");
+  const [view, setView] = createSignal<"skills" | "mastery" | "recipes">("mastery");
   const ctx = useContext(StoryContext);
 
   const mastery = createMemo(() => {
@@ -16,7 +18,14 @@ export const Story_Skills: Component = () => {
         return { label: m?.label, progress: (getProgress(v, masteryXP) * 100), level: getLevel(v, masteryXP) };
       }
     );
-  })
+  });
+
+  const recipes = createMemo(() => {
+    console.log(ctx?.player.recipes);
+    return ctx?.player.recipes.map(
+      (recipe) => itemData[recipe]
+    ) ?? [];
+  });
 
   return (
     <div class="flex flex-col h-full">
@@ -35,11 +44,22 @@ export const Story_Skills: Component = () => {
               )
             }</For>
           </Match>
+          <Match when={view() === "recipes"}>
+            <For each={recipes()}>{
+              (m) => (
+                <div class="flex flex-row justify-between items-center">
+                  <div>{m.label}</div>
+                </div>
+              )
+            }</For>
+          </Match>
+
         </Switch>
       </div>
       <div class="h-1/8 flex flex-row justify-center gap-2">
         <button classList={{ "selected": view() === "skills"}} onClick={() => setView("skills")}>Skills</button>
         <button classList={{ "selected": view() === "mastery"}} onClick={() => setView("mastery")}>Mastery</button>
+        <button classList={{ "selected": view() === "recipes"}} onClick={() => setView("recipes")}>Recipes</button>
       </div>
     </div>
   );

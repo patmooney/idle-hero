@@ -1,3 +1,5 @@
+import type { IStoryContext } from "../provider/story";
+
 export interface IEncounter {
     name: string;
     label: string;
@@ -7,7 +9,21 @@ export interface IEncounter {
     experience?: number;
 }
 
+export type StoryType = "task" | "encounter" | "dialogue";
+export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
+
+export type LearnType = "recipe" | "skill";
+
+export type FurnitureType = "stash" | "craft";
+
+export interface IFurniture {
+    type: FurnitureType;
+    name: string;
+    label: string;
+    storageSize?: number;
+    craftingComplexity?: number;
+}
 
 export interface IItem {
     name: string;
@@ -19,14 +35,16 @@ export interface IItem {
 
     equipSlot?: EquipSlotType;
     masteryType?: MasteryType;
+
+    use?: (ctx: IStoryContext) => void;
 }
+
+export interface ISkill {}
 
 export interface IDrop {
     name: string;
     chance: number;
 }
-
-export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
 
 export interface IMasteryBonus {
     level: number;
@@ -45,12 +63,11 @@ export type IOption = {
     action?: string;
 }
 
-export type StoryType = "task" | "encounter" | "dialogue";
-
 export interface IStory {
     name: string;
     type: StoryType;
     label: string;
+    description: string;
     encounters?: IEncounter[];
     duration?: number;
     cooldown?: number;
@@ -82,4 +99,10 @@ export interface IPlayer {
     stats: IPlayerStats;
     equipment: IItem[];
     mastery: { [key in MasteryType]?: number };
+    recipes: string[];
+}
+
+export interface IGameState {
+    prohibitedItems?: string[];
+    furniture?: string[];
 }

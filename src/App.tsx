@@ -13,7 +13,7 @@ import { Story_Invent } from './components/story-invent';
 import { Story_Skills } from './components/story-skills';
 import { Action_Encounter } from './components/action-encounter';
 
-type ContextScreen = "story" | "invent" | "stats" | "skills";
+type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu";
 
 function App() {
   const [view, setView] = createSignal<ContextScreen>("story");
@@ -41,19 +41,29 @@ function App() {
                 <Match when={view() === "skills"}>
                   <Story_Skills />
                 </Match>
+                <Match when={view() === "menu"}>
+                  <Story_Skills />
+                </Match>
               </Switch>
             </div>
-            <div class="h-1/10 w-full flex flex-row justify-between font-bold">
-              <ContextButton label="Story" onClick={() => setView("story")} view={view()} type="story" />
-              <ContextButton label="Invent" onClick={() => setView("invent")} view={view()} type="invent" />
-              <ContextButton label="Skills" onClick={() => setView("skills")} view={view()} type="skills" />
-              <ContextButton label="Stats" onClick={() => setView("stats")} view={view()} type="stats" />
-            </div>
+            <Menu onChange={setView} view={view()} />
           </div>
         </Commander>
       </StoryProvider>
     </>
   )
+}
+
+export const Menu: Component<{ onChange: (view: ContextScreen) => void, view: ContextScreen }> = (props) => {
+  return (
+    <div class="h-1/10 w-full flex flex-row justify-between font-bold">
+      <ContextButton label="Story" onClick={() => props.onChange("story")} view={props.view} type="story" />
+      <ContextButton label="Invent" onClick={() => props.onChange("invent")} view={props.view} type="invent" />
+      <ContextButton label="Skills" onClick={() => props.onChange("skills")} view={props.view} type="skills" />
+      <ContextButton label="Stats" onClick={() => props.onChange("stats")} view={props.view} type="stats" />
+      <ContextButton label="Menu" onClick={() => props.onChange("menu")} view={props.view} type="menu" />
+    </div>
+  );
 }
 
 export const ActionView: Component = () => {
@@ -63,8 +73,8 @@ export const ActionView: Component = () => {
     <Switch>
       <Match when={ctx?.story().type === "dialogue"}>
         <div class="flex flex-col gap-2 p-1">
-          <div class="bg-black">Story</div>
-          <div class="text-black whitespace-pre-wrap">{ctx?.story().label}</div>
+          <div class="bg-black">{ctx?.story().label ?? "Story"}</div>
+          <div class="text-black whitespace-pre-wrap">{ctx?.story().description}</div>
         </div>
       </Match>
       <Match when={ctx?.story().type === "encounter"}>

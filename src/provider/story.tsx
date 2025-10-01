@@ -2,11 +2,13 @@ import { createContext, Accessor, ParentComponent, createSignal, JSXElement } fr
 import { IItem, IPlayerStats, MasteryType } from "../data/types";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
+import itemData from "../data/item";
 import storyData from "../data/story";
 import actionData from "../data/action";
 import { Story } from "../entity/story";
 import { Player } from "../entity/player";
 import { MAX_INVENT } from "../utils/constants";
+import { GameState } from "../entity/state";
 
 export const DEFAULT_STORY = "story_town_1";
 
@@ -19,16 +21,18 @@ export type ILogItem = {
 
 export interface IStoryContext {
   story: Accessor<Story>;
+  state: Store<GameState>;
   player: Store<Player>;
   log: Accessor<ILogItem[]>;
   setPlayer: SetStoreFunction<Player>;
+  setState: SetStoreFunction<GameState>;
   onNavigate: (name: string) => void;
   onAction: (name: string) => void;
   onAddStat: (name: keyof IPlayerStats, amount: number) => void;
   onAddMastery: (name: MasteryType, amount: number) => void;
   onLog: (msg: string | JSXElement, type?: LogType) => void;
-  addInventory: (item: IItem, count?: number) => void;
-  removeInventory: (item: IItem, count?: number) => void;
+  addInventory: (item: IItem | string, count?: number) => void;
+  removeInventory: (item: IItem | string, count?: number) => void;
 };
 export const StoryContext = createContext<IStoryContext>();
 
@@ -39,12 +43,20 @@ const loadStory = (name: string) => {
 export const StoryProvider: ParentComponent = (props) => {
   const [story, setStory] = createSignal<Story>(loadStory(DEFAULT_STORY));
   const [player, setPlayer] = createStore<Player>(new Player({}));
+  const [state, setState] = createStore<GameState>(new GameState({ furniture: ["bench_simple"] }));
   const [navStack, setNavStack] = createSignal<string[]>([DEFAULT_STORY]);
   const [log, setLog] = createSignal<ILogItem[]>([]);
 
   const onShouldDrop = (_: IItem) => true;
 
-  const addInventory = (item: IItem, count = 1): number => {
+  const addInventory = (item: IItem | string, count = 1): number => {
+    if (typeof item === "string") {
+      if (!itemData[item]) {
+        console.warn("Invalid or not found item", item);
+        return count;
+      }
+      item = itemData[item];
+    }
     let newInvent = [...player.invent];
     if (item.exclusive && newInvent.find((inv) => inv?.name === item.name)) {
       return 0;
@@ -97,20 +109,30 @@ export const StoryProvider: ParentComponent = (props) => {
     return count - remaining;
   };
 
+
   const onAction = (name: string) => {
     if (!actionData[name]) {
       return;
     }
-    return actionData[name]({ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, log, onLog, onAddMastery });
+    return actionData[name](storyValue);
   };
 
-  const removeInventory = (item: IItem, count = 1): boolean => {
+
+  const removeInventory = (item: IItem | string, count = 1): boolean => {
+    if (typeof item === "string") {
+      if (!itemData[item]) {
+        console.warn("Invalid or not found item", item);
+        return false;
+      }
+      item = itemData[item];
+    }
+
     const i = player.invent.findLastIndex((inv) => inv?.name === item.name);
     if (i < 0) {
       return false;
     }
     const newInvent = [
-      ...player.invent.reverse().map(
+      ...player.invent.toReversed().map(
         (inv) => {
           if (!count || inv?.name !== item.name || !inv?.stack) {
             return inv;
@@ -170,7 +192,9 @@ export const StoryProvider: ParentComponent = (props) => {
     setLog([...log().slice(Math.min(log()?.length - 99, 0)), item]);
   }
 
-  return <StoryContext.Provider
-    value={{ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, onLog, log, onAddMastery }}
-  >{props.children}</StoryContext.Provider>
+  const storyValue = {
+    story, onNavigate, onAddStat, onAction, player, state, setState,
+    setPlayer, addInventory, removeInventory, log, onLog, onAddMastery
+  };
+  return <StoryContext.Provider value={storyValue}>{props.children}</StoryContext.Provider>
 };

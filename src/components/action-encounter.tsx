@@ -61,7 +61,7 @@ export const Action_Encounter: Component = () => {
       if (enc.experience) {
         ctx?.onAddStat("experience", enc.experience);
       }
-      const drops = story.getDrops(enc);
+      const drops = story.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name));
       if (drops?.length) {
         drops.forEach((drop) => ctx?.addInventory(drop))
         ctx?.onLog(

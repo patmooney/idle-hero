@@ -7,11 +7,12 @@ export class Player implements IPlayer {
     stats: IPlayerStats;
     mastery: { [key in MasteryType]?: number };
     invent: ((IItem & { stack?: number }) | null)[];
+    recipes: string[];
 
-    constructor(player: Partial<IPlayer>, invent?: IItem[]) {
+    constructor(player: Partial<IPlayer> = {}, invent: (IItem | null)[] = new Array(MAX_INVENT).fill(null)) {
       this.equipment = player.equipment ?? [];
-      this.invent = invent ?? new Array(MAX_INVENT).fill(null);
-      this.mastery = {};
+      this.mastery = player.mastery ?? {};
+      this.recipes = player.recipes ?? [];
       this.stats = player.stats ?? {
         gold: 0,
         experience: 0,
@@ -21,6 +22,7 @@ export class Player implements IPlayer {
         agility: 1,
         attSpeed: 0,
       };
+      this.invent = invent;
     }
 
     weaponMastery(): MasteryType {
@@ -44,7 +46,9 @@ export class Player implements IPlayer {
       const min = Math.round(totalEqMin * strRatio);
       const max = Math.round(totalEqMax * strRatio);
 
-      return [min, max];
+        return [100, 100];
+
+//      return [min, max];
     }
 
     attackRate() {

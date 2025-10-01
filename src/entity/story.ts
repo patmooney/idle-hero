@@ -4,6 +4,7 @@ import itemData from "../data/item";
 export class Story implements IStory {
   name: string;
   label: string;
+  description: string;
   type: StoryType;
   encounters?: IEncounter[];
   duration?: number;
@@ -16,6 +17,7 @@ export class Story implements IStory {
     this.label = story.label;
     this.type = story.type;
     this.name = story.name;
+    this.description = story.description;
     Object.assign(this, story);
   }
 

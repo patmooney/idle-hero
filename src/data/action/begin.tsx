@@ -1,7 +1,8 @@
 import { IStoryContext } from "../../provider/story";
 import itemData from "../item";
+import { LearnType } from "../types";
 
-const actions: ({ name: string, action: (ctx: IStoryContext) => void })[] = [
+const actions: ({ name: string, action: (ctx: IStoryContext, args?: unknown[]) => void })[] = [
   {
     name: "action_sell_hay_1",
     action: (ctx) => {
@@ -24,6 +25,27 @@ const actions: ({ name: string, action: (ctx: IStoryContext) => void })[] = [
         </>,
         "meta"
       );
+    }
+  },
+  {
+    name: "use_item",
+    action: (_, args?: unknown[]) => {
+      if (!args?.length) {
+        return;
+      }
+      const useArg = args[0];
+      if (!Array.isArray(useArg)) {
+        console.warn("Invalid use args", args);
+        return;
+      }
+      const type = useArg[0];
+      if (type === "learn") {
+        const [_, learnType, entityType] = useArg[0] as [string, LearnType, string];
+        if (!["recipe", "skill"].includes(learnType)) {
+          console.warn("Invalid use args", args);
+          return;
+        }
+      }
     }
   }
 ];
