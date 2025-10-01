@@ -12,6 +12,7 @@ export interface IEncounter {
 export type StoryType = "task" | "encounter" | "dialogue";
 export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
+export type CraftingType = "basic" | "weapon" | "armour";
 
 export type LearnType = "recipe" | "skill";
 
@@ -22,21 +23,34 @@ export interface IFurniture {
     name: string;
     label: string;
     storageSize?: number;
+    cratingType?: CraftingType;
     craftingComplexity?: number;
 }
 
-export interface IItem {
+export type IItem = IItemBase | IItemEquipable | IItemCraftable;
+export type IRecipe = IItem & { craftableItem: string };
+
+export interface IItemBase {
     name: string;
     label: string;
     stats?: IStats;
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
-
-    equipSlot?: EquipSlotType;
-    masteryType?: MasteryType;
-
     use?: (ctx: IStoryContext) => void;
+}
+
+export interface IItemEquipable extends IItemBase {
+    equipSlot: EquipSlotType;
+    equipRequirements?: Partial<IPlayerStats>;
+    masteryType?: MasteryType;
+}
+
+export interface IItemCraftable extends IItemBase {
+    craftType: CraftingType;
+    craftComplexity: number;
+    craftLevel: number;
+    ingredients?: [string, number][];
 }
 
 export interface ISkill {}
@@ -60,7 +74,9 @@ export interface IMastery {
 export type IOption = {
     label: string;
     goto?: string;
-    action?: string;
+    action?: (ctx: IStoryContext) => void;
+    subtext?: string;
+    isDisabled?: boolean;
 }
 
 export interface IStory {
@@ -97,7 +113,7 @@ export type IPlayerStats = IAttributes & IStats;
 
 export interface IPlayer {
     stats: IPlayerStats;
-    equipment: IItem[];
+    equipment: IItemEquipable[];
     mastery: { [key in MasteryType]?: number };
     recipes: string[];
 }

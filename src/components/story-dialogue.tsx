@@ -8,8 +8,8 @@ export const Story_Dialogue: Component = () => {
     if (option.goto) {
       return ctx?.onNavigate(option.goto);
     }
-    if (option.action) {
-      return ctx?.onAction(option.action);
+    if (option.action && ctx) {
+      return option.action(ctx);
     }
   }
   const options = createMemo(() => {
@@ -20,9 +20,21 @@ export const Story_Dialogue: Component = () => {
     return opts?.(ctx!) ?? [];
   });
   return (
-    <div class="flex flex-col gap-5 pt-5">
+    <div class="flex flex-col gap-5 p-2">
       <For each={options()}>{
-        (opt) => <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold" onClick={() => onClick(opt)}>{opt.label}</div>
+        (opt) => <div
+          class="w-full border content-center h-12 text-lg font-bold flex flex-col justify-center"
+          onClick={() => !opt.isDisabled && onClick(opt)}
+          classList={{
+            "text-gray-500": opt.isDisabled,
+            "cursor-pointer": !opt.isDisabled
+          }}
+        >
+          {opt.label}
+          <Show when={opt.subtext}>
+            <span class="text-xs text-gray-400">{opt.subtext}</span>
+          </Show>
+        </div>
       }</For>
       <Show when={ctx?.story()?.name !== DEFAULT_STORY}>
         <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold" onClick={() => onClick({ label: "Go back", goto: "_back" })}>

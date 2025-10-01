@@ -1,9 +1,9 @@
 import { Component, createMemo, createSignal, For, Match, Switch, useContext } from "solid-js";
 import masteryData from "../data/mastery";
 import { StoryContext } from "../provider/story";
-import {MasteryType} from "../data/types";
-import {getLevel, getProgress, masteryXP} from "../utils/levels";
-import {Progress} from "./ticker";
+import { MasteryType } from "../data/types";
+import { getLevel, getProgress, masteryXP } from "../utils/levels";
+import { Progress } from "./ticker";
 
 import itemData from "../data/item";
 
@@ -21,7 +21,6 @@ export const Story_Skills: Component = () => {
   });
 
   const recipes = createMemo(() => {
-    console.log(ctx?.player.recipes);
     return ctx?.player.recipes.map(
       (recipe) => itemData[recipe]
     ) ?? [];
@@ -29,7 +28,7 @@ export const Story_Skills: Component = () => {
 
   return (
     <div class="flex flex-col h-full">
-      <div class="h-7/8">
+      <div class="h-7/8 p-2">
         <Switch>
           <Match when={view() === "skills"}>TODO</Match>
           <Match when={view() === "mastery"}>
@@ -56,7 +55,7 @@ export const Story_Skills: Component = () => {
 
         </Switch>
       </div>
-      <div class="h-1/8 flex flex-row justify-center gap-2">
+      <div class="h-1/8 flex flex-row justify-between gap-2 p-2">
         <button classList={{ "selected": view() === "skills"}} onClick={() => setView("skills")}>Skills</button>
         <button classList={{ "selected": view() === "mastery"}} onClick={() => setView("mastery")}>Mastery</button>
         <button classList={{ "selected": view() === "recipes"}} onClick={() => setView("recipes")}>Recipes</button>

@@ -12,6 +12,7 @@ import { Story_Dialogue } from './components/story-dialogue';
 import { Story_Invent } from './components/story-invent';
 import { Story_Skills } from './components/story-skills';
 import { Action_Encounter } from './components/action-encounter';
+import { Story_Stats } from "./components/story-stats";
 
 type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu";
 
@@ -30,7 +31,7 @@ function App() {
             <div class="h-1/10">
               <Log />
             </div>
-            <div class="h-6/10 bg-gray-800 p-2">
+            <div class="h-6/10 bg-gray-800">
               <Switch fallback={<div>Unknown view</div>}>
                 <Match when={view() === "story"}>
                   <Story_Dialogue />
@@ -40,6 +41,9 @@ function App() {
                 </Match>
                 <Match when={view() === "skills"}>
                   <Story_Skills />
+                </Match>
+                <Match when={view() === "stats"}>
+                  <Story_Stats />
                 </Match>
                 <Match when={view() === "menu"}>
                   <Story_Skills />

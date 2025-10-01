@@ -12,24 +12,32 @@ const story: IStory[] = [
     ]
   },
   {
-    name: "story_home_1",
-    label: "Home",
-    description: "Home sweet home",
-    type: "dialogue",
-    options: [
-      { label: "Build", goto: "story_home_2" },
-      { label: "Stash", goto: "story_home_3" },
-      { label: "Craft", goto: "story_home_4" },
-    ]
-  },
-  {
     name: "story_farmer_1",
     label: "Farm",
     description: "A farmer approaches you...\n*Hick*\nFeel free to beat up on some scarecrows. I'll buy any hay you find!",
     type: "dialogue",
     options: [
       { label: "Fight scarecrows", goto: "story_scarecrows_1" },
-      { label: "Sell Hay", action: "action_sell_hay_1" }
+      {
+        label: "Sell Hay",
+        action: (ctx) => {
+          const invent = ctx.player.invent;
+          const { removeInventory, onAddStat } = ctx;
+          const count = invent.filter((inv) => inv?.name === "hay_1").reduce<number>((acc, inv) => acc + (inv?.stack ?? 0), 0);
+          if (!count) {
+            return;
+          }
+          removeInventory("hay_1", count);
+          onAddStat("gold", count);
+          ctx.onLog(
+            <>
+              You sell<span class="font-bold ml-1">{/*@once*/count}</span> <span class="font-bold text-blue-500 mr-1">Hay</span>
+              For <span class="font-bold">{/*@once*/count}</span> gold
+            </>,
+            "meta"
+          );
+        }
+      }
     ]
   },
   {

@@ -5,6 +5,7 @@ const furnitureList: IFurniture[] = [
     type: "craft",
     name: "bench_simple",
     label: "Simple crafting bench",
+    cratingType: "basic",
     craftingComplexity: 1
   }
 ]

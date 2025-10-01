@@ -1,9 +1,9 @@
-import { IItem, IPlayer, IPlayerStats, IStats, MasteryType } from "../data/types";
+import { IItem, IItemEquipable, IPlayer, IPlayerStats, IStats, MasteryType } from "../data/types";
 import { MAX_INVENT, BASE_ATTACK_DELAY } from "../utils/constants";
 import { cumulateBonus } from "../utils/mastery";
 
 export class Player implements IPlayer {
-    equipment: IItem[];
+    equipment: IItemEquipable[];
     stats: IPlayerStats;
     mastery: { [key in MasteryType]?: number };
     invent: ((IItem & { stack?: number }) | null)[];
