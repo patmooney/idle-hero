@@ -38,15 +38,16 @@ export const Action_Encounter: Component = () => {
     }
 
     const [min, max] = ctx?.player.attackDamage() ?? [0, 1];
-    const rand = min + Math.round(Math.random() * (max - min));
-    const damage = Math.min(rand, h);
-    const newHealth = h - damage;
+    const damage = min + Math.round(Math.random() * (max - min));
+    const newHealth = h - Math.min(damage, h);
 
     ctx?.onLog(
       <>
         You hit the <span class="text-red-800 font-bold">{/*@once*/enc.label}</span> for <span class="text-green-800 font-bold">{/*@once*/damage}</span> damage
       </>, "basic"
     );
+
+    ctx?.onAddMastery(ctx.player.weaponMastery(), damage);
 
     if (newHealth <= 0) {
       ctx?.onLog(
@@ -84,8 +85,12 @@ export const Action_Encounter: Component = () => {
       </div>
       <Show when={encounter()}>
         <div class="text-red-800">{encounter()?.label}</div>
-        <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />
-        <Progress type="red" max={encounter()!.health} value={health()!} label="Health" showNumber></Progress>
+        <div class="h-8">
+          <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />
+        </div>
+        <div class="h-8">
+          <Progress type="red" max={encounter()!.health} value={health()!} label="Health" showNumber></Progress>
+        </div>
       </Show>
     </div>
   );

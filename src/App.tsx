@@ -1,12 +1,17 @@
-import { Component, createMemo, createSignal, For, Match, Switch, useContext } from 'solid-js'
 import './App.css'
+
+import { Component, createMemo, createSignal, For, Match, Switch, useContext } from 'solid-js'
+import { createStore } from 'solid-js/store';
+
+import { getLevel, getProgress } from './utils/levels';
+
 import { Commander } from './provider/commander'
 import { LogType, StoryContext, StoryProvider } from './provider/story';
+
 import { Story_Dialogue } from './components/story-dialogue';
-import { Action_Encounter } from './components/action-encounter';
 import { Story_Invent } from './components/story-invent';
-import {createStore} from 'solid-js/store';
-import {getLevel, getProgress} from './utils/levels';
+import { Story_Skills } from './components/story-skills';
+import { Action_Encounter } from './components/action-encounter';
 
 type ContextScreen = "story" | "invent" | "stats" | "skills";
 
@@ -32,6 +37,9 @@ function App() {
                 </Match>
                 <Match when={view() === "invent"}>
                   <Story_Invent />
+                </Match>
+                <Match when={view() === "skills"}>
+                  <Story_Skills />
                 </Match>
               </Switch>
             </div>

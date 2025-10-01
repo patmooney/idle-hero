@@ -7,6 +7,8 @@ export interface IEncounter {
     experience?: number;
 }
 
+export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
+
 export interface IItem {
     name: string;
     label: string;
@@ -14,6 +16,9 @@ export interface IItem {
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
+
+    equipSlot?: EquipSlotType;
+    masteryType?: MasteryType;
 }
 
 export interface IDrop {
@@ -21,7 +26,18 @@ export interface IDrop {
     chance: number;
 }
 
-export interface ISkill {}
+export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
+
+export interface IMasteryBonus {
+    level: number;
+    stats: IStats;
+}
+
+export interface IMastery {
+    name: MasteryType;
+    label: string;
+    bonus: IMasteryBonus[]; // cumulative
+}
 
 export type IOption = {
     label: string;
@@ -38,9 +54,11 @@ export interface IStory {
     encounters?: IEncounter[];
     duration?: number;
     cooldown?: number;
+    options?: IOption[];
+
+    // Does this story precipitate any items or skills on entry?
     items?: IItem[];
     skills?: ISkill[];
-    options?: IOption[];
 }
 
 export interface IStats {
@@ -63,11 +81,5 @@ export type IPlayerStats = IAttributes & IStats;
 export interface IPlayer {
     stats: IPlayerStats;
     equipment: IItem[];
-}
-
-export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff";
-
-export interface IMastery {
-    type: MasteryType;
-    experience?: number;
+    mastery: { [key in MasteryType]?: number };
 }

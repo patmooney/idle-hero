@@ -1,135 +1,14 @@
 import { createContext, Accessor, ParentComponent, createSignal, JSXElement } from "solid-js";
-import { IEncounter, IItem, IOption, IPlayer, IPlayerStats, ISkill, IStats, IStory, StoryType } from "../data/types";
+import { IItem, IPlayerStats, MasteryType } from "../data/types";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
 import storyData from "../data/story";
-import itemData from "../data/item";
 import actionData from "../data/action";
+import { Story } from "../entity/story";
+import { Player } from "../entity/player";
+import { MAX_INVENT } from "../utils/constants";
 
 export const DEFAULT_STORY = "story_town_1";
-export const BASE_ATTACK_DELAY = 25;
-export const MAX_INVENT = 20;
-export const LEVEL_EXP_BASE = 80;
-export const LEVEL_EXPONENT = 1.7;
-
-export const levelsXP = new Array(99 * 5).fill(1).map(
-  (_, idx) => Math.floor(LEVEL_EXP_BASE * Math.pow(idx + 1, LEVEL_EXPONENT))
-);
-
-export class Story implements IStory {
-  name: string;
-  label: string;
-  type: StoryType;
-  encounters?: IEncounter[];
-  duration?: number;
-  cooldown?: number;
-  items?: IItem[];
-  skills?: ISkill[];
-  options?: IOption[];
-
-  constructor(story: IStory) {
-    this.label = story.label;
-    this.type = story.type;
-    this.name = story.name;
-    Object.assign(this, story);
-  }
-
-  getEncounter(): IEncounter | undefined {
-    const rand = Math.random();
-    if (this.type !== "encounter" || !this.encounters?.length) {
-      return;
-    }
-    // if monsterA has a chance of 0.5 and monsterB has a chance of 0.01 then monsterB will only spawn
-    // if rand 
-    return this.encounters.sort((a, b) => a.chance - b.chance).find(
-      (enc) => {
-        return rand <= enc.chance;
-      }
-    );
-  }
-
-  getDrops(enc: IEncounter): IItem[] | undefined {
-    const drops = enc.drops?.filter(
-      (drop) => {
-        return Math.random() <= drop.chance;
-      }
-    );
-    return drops?.map(
-      (drop) => itemData[drop.name]
-    ).filter(Boolean) as IItem[];
-  }
-}
-
-export class Player implements IPlayer {
-    equipment: IItem[];
-    stats: IPlayerStats;
-    invent: ((IItem & { stack?: number }) | null)[];
-
-    constructor(player: Partial<IPlayer>, invent?: IItem[]) {
-      this.equipment = player.equipment ?? [];
-      this.invent = invent ?? new Array(MAX_INVENT).fill(null);
-      this.stats = player.stats ?? {
-        gold: 0,
-        experience: 0,
-        health: 10,
-        maxHealth: 10,
-        strength: 1,
-        agility: 1,
-        attSpeed: 0,
-      };
-    }
-
-    weaponMastery(): string {
-      return "";
-    }
-    getMasteryPerk(_: string): IStats {
-      return {
-        attMin: 0,
-        attMax: 0
-      }
-    }
-
-    attackDamage(): [number, number] {
-      let totalEqMin = this.equipment.reduce<number>((acc, eq) => acc + (eq.stats?.attMin ?? 0), 1);
-      let totalEqMax = this.equipment.reduce<number>((acc, eq) => acc + (eq.stats?.attMax ?? 0), 1);
-      
-      const masteryType = this.weaponMastery();
-      const perk = this.getMasteryPerk(masteryType);
-      totalEqMin += perk?.attMin ?? 0;
-      totalEqMax += perk?.attMax ?? 0;
-
-      const strRatio = 1 + Math.pow((this.stats.strength ?? 0) / 100, 0.7);
-      const min = Math.round(totalEqMin * strRatio);
-      const max = Math.round(totalEqMax * strRatio);
-
-      return [min, max];
-    }
-
-    attackRate() {
-      const maxAgility = 100;
-      const agility = Math.min(maxAgility, Math.max(1, this.stats.agility ?? 0));
-      const minAttackDelay = 1; // not possible to go faster than 4 attacks a second
-
-      const maxAgilityEffect = 5; // this means that with agility at 100 and a 100% delay reduction from items, the fastest is 4 attacks p/s
-      const bonusRatio = Math.sqrt(agility / maxAgility);
-      const statDelayReduce = maxAgilityEffect * bonusRatio;
-
-      const maxItemEffect = 5;
-      const itemRatio = Math.min(this.equipment.reduce<number>((acc, eq) => acc + (eq.stats?.attSpeed ?? 0), 0), 1)// in future will be a %, e.g. a helm of speed gives 10% reduced attack delay (0.1)
-      const itemDelayReduce = itemRatio * maxItemEffect;
-
-      const maxMasteryEffect = 5;
-      const masteryType = this.weaponMastery();
-      const perk = this.getMasteryPerk(masteryType);
-      const masteryDelayReduce = (perk.attSpeed ?? 0) * maxMasteryEffect;
-
-      const maxCombinedEffect = 9;
-      const combinedDelayReduce = maxCombinedEffect * ((bonusRatio + itemRatio + (perk.attSpeed ?? 0)) / 3);
-
-      const rate = Math.max(BASE_ATTACK_DELAY - statDelayReduce - itemDelayReduce - combinedDelayReduce - masteryDelayReduce, minAttackDelay);
-      return rate;
-    }
-}
 
 export type LogType = "bad" | "good" | "meta" | "drop" | "basic";
 export type ILogItem = {
@@ -146,6 +25,7 @@ export interface IStoryContext {
   onNavigate: (name: string) => void;
   onAction: (name: string) => void;
   onAddStat: (name: keyof IPlayerStats, amount: number) => void;
+  onAddMastery: (name: MasteryType, amount: number) => void;
   onLog: (msg: string | JSXElement, type?: LogType) => void;
   addInventory: (item: IItem, count?: number) => void;
   removeInventory: (item: IItem, count?: number) => void;
@@ -221,7 +101,7 @@ export const StoryProvider: ParentComponent = (props) => {
     if (!actionData[name]) {
       return;
     }
-    return actionData[name]({ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, log, onLog });
+    return actionData[name]({ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, log, onLog, onAddMastery });
   };
 
   const removeInventory = (item: IItem, count = 1): boolean => {
@@ -275,6 +155,11 @@ export const StoryProvider: ParentComponent = (props) => {
     setPlayer("stats", stat, newVal);
   };
 
+  const onAddMastery = (mastery: MasteryType, value = 1) => {
+    const newVal = (player.mastery[mastery] ?? 0) + value;
+    setPlayer("mastery", mastery, newVal);
+  };
+
   const onLog = (msg: string | JSXElement, type: LogType = "basic") => {
     const d = new Date();
     const item = {
@@ -286,6 +171,6 @@ export const StoryProvider: ParentComponent = (props) => {
   }
 
   return <StoryContext.Provider
-    value={{ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, onLog, log }}
+    value={{ story, onNavigate, onAddStat, onAction, player, setPlayer, addInventory, removeInventory, onLog, log, onAddMastery }}
   >{props.children}</StoryContext.Provider>
 };

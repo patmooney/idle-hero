@@ -24,9 +24,9 @@ export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: Tic
 export const Progress: Component<{ max: number, value: number, type?: TickerType, label?: string, showNumber?: boolean, showPc?: boolean }> = (props) => {
   const pc = createMemo(() => Math.min(props.value / props.max * 100, 100));
   return (
-    <div class="w-full h-8 border rounded relative text-black bg-gray-500">
+    <div class="w-full h-full border rounded relative text-black bg-gray-500">
       <div
-        class="ease-linear w-0 h-full"
+        class="ease-linear w-0 h-full rounded"
         style={{ width: pc() + "%" }}
         classList={{
           "bg-white": !props.type,
@@ -36,10 +36,10 @@ export const Progress: Component<{ max: number, value: number, type?: TickerType
           "bg-red-500": props.type === "red"
         }}
       ></div>
-      <div class="absolute left-1/2 top-1/2 -translate-1/2">
+      <div class="absolute left-1/2 top-1/2 -translate-1/2 whitespace-nowrap">
         <Switch>
           <Match when={props.showPc}>
-            {props.label} {pc().toFixed(0)}%
+            {props.label} ({pc().toFixed(0)}%)
           </Match>
           <Match when={props.showNumber}>
             {props.label} {props.value}
