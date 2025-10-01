@@ -71,7 +71,7 @@ export interface IStory {
     encounters?: IEncounter[];
     duration?: number;
     cooldown?: number;
-    options?: IOption[];
+    options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
 
     // Does this story precipitate any items or skills on entry?
     items?: IItem[];

@@ -18,7 +18,8 @@ const story: IStory[] = [
     type: "dialogue",
     options: [
       { label: "Build", goto: "story_home_2" },
-      { label: "Stash", goto: "story_home_3" }
+      { label: "Stash", goto: "story_home_3" },
+      { label: "Craft", goto: "story_home_4" },
     ]
   },
   {

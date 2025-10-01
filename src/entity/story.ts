@@ -1,5 +1,6 @@
 import { IEncounter, IItem, IOption, ISkill, IStory, StoryType } from "../data/types";
 import itemData from "../data/item";
+import { IStoryContext } from "../provider/story";
 
 export class Story implements IStory {
   name: string;
@@ -11,7 +12,7 @@ export class Story implements IStory {
   cooldown?: number;
   items?: IItem[];
   skills?: ISkill[];
-  options?: IOption[];
+  options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
 
   constructor(story: IStory) {
     this.label = story.label;
