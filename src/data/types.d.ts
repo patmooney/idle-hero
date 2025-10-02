@@ -1,3 +1,4 @@
+import {JSX, JSXElement} from "solid-js";
 import type { IStoryContext } from "../provider/story";
 
 export interface IEncounter {
@@ -37,7 +38,7 @@ export interface IItemBase {
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
-    use?: (ctx: IStoryContext) => void;
+    use?: (ctx: IStoryContext) => boolean;
 }
 
 export interface IItemEquipable extends IItemBase {
@@ -72,7 +73,7 @@ export interface IMastery {
 }
 
 export type IOption = {
-    label: string;
+    label: string | JSXElement;
     goto?: string;
     action?: (ctx: IStoryContext) => void;
     subtext?: string;
@@ -83,7 +84,7 @@ export interface IStory {
     name: string;
     type: StoryType;
     label: string;
-    description: string;
+    description: string | JSXElement;
     encounters?: IEncounter[];
     duration?: number;
     cooldown?: number;
@@ -101,6 +102,8 @@ export interface IStats {
     attSpeed?: number;
     attMin?: number;
     attMax?: number;
+    physRes?: number;
+    magRes?: number;
 }
 
 export interface IAttributes {

@@ -18,7 +18,7 @@ const story: IStory[] = [
     type: "dialogue",
     options: [
       { label: "Approach the farmer", goto: "story_farmer_2" },
-      { label: "Fight scarecrows", goto: "story_scarecrows_1" },
+      { label: <span class="text-red-500">Fight scarecrows</span>, goto: "story_scarecrows_1" },
       {
         label: "Sell Hay",
         action: (ctx) => {
@@ -44,15 +44,15 @@ const story: IStory[] = [
   {
     name: "story_farmer_2",
     label: "Farmer",
-    description: `You approach, he holds your wrist loosely like an exhausted child.
-
-    "Loathsome shadowed cloaks
-    Golden light shimmering, blind eyes
-    Fear, is Death knocking?"
-
-He sits and cries.
-`,
-
+    description: <>
+      You approach, he holds your wrist loosely like an exhausted child.
+      <div class="font-bold m-2">
+        <div>" .. Loathsome shadowed cloaks</div>
+        <div>Golden light shimmering, blind eyes</div>
+        <div>Fear, is Death knocking? .. "</div>
+      </div>
+      He sits and cries.
+    </>,
     type: "dialogue",
     options: [
       { label: "Console", goto: "story_farmer_3" },
@@ -62,10 +62,10 @@ He sits and cries.
   {
     name: "story_farmer_3",
     label: "Farmer",
-    description: `
-    "Am I the keeper of the wheat?
-    ... or is it the keeper of me?"
-`,
+    description: <div class="font-bold m-2">
+      <div>" .. Am *I* the keeper of the wheat?</div>
+      <div>... or is it the keeper of me? .. "</div>
+    </div>,
 
     type: "dialogue",
     options: [
@@ -87,7 +87,9 @@ He sits and cries.
         experience: 50,
         drops: [
           { name: "hay_1", chance: 1 },
-          { name: "recipe_hay_hand_1", chance: 1 },
+          { name: "recipe_hay_hand_1", chance: 0.05 },
+          { name: "recipe_hay_head_1", chance: 0.05 },
+          { name: "recipe_hay_chest_1", chance: 0.05 },
         ]
       }
     ]

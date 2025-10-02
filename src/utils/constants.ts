@@ -3,3 +3,4 @@ export const MASTERY_EXP_BASE = 5;
 export const LEVEL_EXPONENT = 1.7;
 export const MAX_INVENT = 20;
 export const BASE_ATTACK_DELAY = 5;
+export const MIN_TICK_TIME_MS = 100;

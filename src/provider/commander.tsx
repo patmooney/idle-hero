@@ -1,11 +1,10 @@
 import { createContext, createSignal, onMount, ParentComponent } from "solid-js";
+import { MIN_TICK_TIME_MS } from "../utils/constants";
 
 export const CommandContext = createContext<{
   evt: EventTarget
   fire: () => void
 }>();
-
-const MIN_TICK_TIME_MS = 100;
 
 export const TickEvent = new Event("tick");
 

@@ -8,6 +8,20 @@ const items: IRecipe[] = [
     stackable: false,
     exclusive: true,
     craftableItem: "hay_hand_1"
+  },
+  {
+    name: "recipe_hay_head_1",
+    label: "Recipe: Hay bandana",
+    stackable: false,
+    exclusive: true,
+    craftableItem: "hay_head_1"
+  },
+  {
+    name: "recipe_hay_chest_1",
+    label: "Recipe: Hay vest",
+    stackable: false,
+    exclusive: true,
+    craftableItem: "hay_chest_1"
   }
 ].map(
   (item) => ({
@@ -18,6 +32,7 @@ const items: IRecipe[] = [
         ctx.setState("prohibitedItems", [...ctx.state.prohibitedItems, item.name]);
       }
       ctx.removeInventory(item.name);
+      return true;
     }
   })
 );

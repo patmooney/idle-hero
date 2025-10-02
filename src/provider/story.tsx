@@ -26,7 +26,8 @@ export interface IStoryContext {
   setPlayer: SetStoreFunction<Player>;
   setState: SetStoreFunction<GameState>;
   onNavigate: (name: string) => void;
-  onEquip: (item: IItemEquipable) => void;
+  onEquip: (item: IItemEquipable) => boolean;
+  onUnequip: (item: IItemEquipable) => boolean;
   onAddStat: (name: keyof IPlayerStats, amount: number) => void;
   onAddMastery: (name: MasteryType, amount: number) => void;
   onLog: (msg: string | JSXElement, type?: LogType) => void;
@@ -182,7 +183,7 @@ export const StoryProvider: ParentComponent = (props) => {
     setLog([...log().slice(Math.min(log()?.length - 999, 0)), item]);
   }
 
-  const onEquip = (item: IItemEquipable) => {
+  const onEquip = (item: IItemEquipable): boolean => {
     if (removeInventory(item)) {
       let isEquiped = false;
       setPlayer(
@@ -192,6 +193,9 @@ export const StoryProvider: ParentComponent = (props) => {
             (eq) => {
               if(eq.equipSlot === item.equipSlot) {
                 isEquiped = true;
+                Object.entries(eq.stats ?? {}).forEach(
+                  ([k, v]) => onAddStat(k as keyof IPlayerStats, 0 - v)
+                );
                 addInventory(eq);
                 return item;
               }
@@ -201,13 +205,32 @@ export const StoryProvider: ParentComponent = (props) => {
           ...(isEquiped ? [] : [item])
         ]
       )
+      Object.entries(item.stats ?? {}).forEach(
+        ([k, v]) => onAddStat(k as keyof IPlayerStats, v)
+      );
+      return true;
     }
+    return false;
+  };
+
+  const onUnequip = (item: IItemEquipable): boolean => {
+    const hasEquipped = !!player.equipment.find((eq) => eq.name === item.name);
+    if (hasEquipped && addInventory(item)) {
+      setPlayer("equipment", [...player.equipment.filter(
+        (eq) => eq.name !== item.name
+      )]);
+      Object.entries(item.stats ?? {}).forEach(
+        ([k, v]) => onAddStat(k as keyof IPlayerStats, 0 - v)
+      );
+      return true;
+    }
+    return false;
   }
 
   const storyValue = {
     story, onNavigate, onAddStat, player, state, setState,
     setPlayer, addInventory, removeInventory, log, onLog, onAddMastery,
-    onEquip
+    onEquip, onUnequip
   };
 
   return <StoryContext.Provider value={storyValue}>{props.children}</StoryContext.Provider>
