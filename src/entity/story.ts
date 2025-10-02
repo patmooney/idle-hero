@@ -1,11 +1,12 @@
 import { IEncounter, IItem, IOption, ISkill, IStory, StoryType } from "../data/types";
 import itemData from "../data/item";
 import { IStoryContext } from "../provider/story";
+import { JSXElement } from "solid-js";
 
 export class Story implements IStory {
   name: string;
   label: string;
-  description: string;
+  description: string | JSXElement;
   type: StoryType;
   encounters?: IEncounter[];
   duration?: number;
