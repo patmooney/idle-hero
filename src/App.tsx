@@ -24,14 +24,18 @@ function App() {
       <StoryProvider>
         <Commander>
           <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
-            <div class="h-2/10 bg-gray-400">
-              <Overview />
-              <ActionView />
+            <div class="h-3/10 bg-gray-400">
+              <div class="h-1/10">
+                <Overview />
+              </div>
+              <div class="h-9/10">
+                <ActionView />
+              </div>
             </div>
             <div class="h-1/10">
               <Log />
             </div>
-            <div class="h-6/10 bg-gray-800">
+            <div class="h-5/10 bg-gray-800">
               <Switch fallback={<div>Unknown view</div>}>
                 <Match when={view() === "story"}>
                   <Story_Dialogue />
@@ -76,9 +80,9 @@ export const ActionView: Component = () => {
   return (
     <Switch>
       <Match when={ctx?.story().type === "dialogue"}>
-        <div class="flex flex-col gap-2 p-1">
-          <div class="bg-black">{ctx?.story().label ?? "Story"}</div>
-          <div class="text-black whitespace-pre-wrap">{ctx?.story().description}</div>
+        <div class="flex flex-col gap-2 p-1 h-full">
+          <div class="bg-black text-left pl-1">{ctx?.story().label ?? "Story"}</div>
+          <div class="text-black whitespace-pre-wrap text-left overflow-y-auto text-sm">{ctx?.story().description}</div>
         </div>
       </Match>
       <Match when={ctx?.story().type === "encounter"}>

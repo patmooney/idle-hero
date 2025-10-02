@@ -61,9 +61,10 @@ export const Action_Encounter: Component = () => {
       if (enc.experience) {
         ctx?.onAddStat("experience", enc.experience);
       }
-      const drops = story.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name));
+      const drops = story.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name)).filter(
+        (drop) => !!ctx?.addInventory(drop)
+      );
       if (drops?.length) {
-        drops.forEach((drop) => ctx?.addInventory(drop))
         ctx?.onLog(
           <>
             It dropped:
@@ -79,7 +80,7 @@ export const Action_Encounter: Component = () => {
   };
 
   return (
-    <div class="flex flex-col gap-1 p-1">
+    <div class="flex flex-col gap-1 p-1 h-full">
       <div class="bg-black">
         Attacking ({count()})
       </div>

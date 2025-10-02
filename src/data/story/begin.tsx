@@ -14,9 +14,10 @@ const story: IStory[] = [
   {
     name: "story_farmer_1",
     label: "Farm",
-    description: "A farmer approaches you...\n*Hick*\nFeel free to beat up on some scarecrows. I'll buy any hay you find!",
+    description: `A vacant expressionless farmer. Hasn't washed in days.`,
     type: "dialogue",
     options: [
+      { label: "Approach the farmer", goto: "story_farmer_2" },
       { label: "Fight scarecrows", goto: "story_scarecrows_1" },
       {
         label: "Sell Hay",
@@ -40,6 +41,38 @@ const story: IStory[] = [
       }
     ]
   },
+  {
+    name: "story_farmer_2",
+    label: "Farmer",
+    description: `You approach, he holds your wrist loosely like an exhausted child.
+
+    "Loathsome shadowed cloaks
+    Golden light shimmering, blind eyes
+    Fear, is Death knocking?"
+
+He sits and cries.
+`,
+
+    type: "dialogue",
+    options: [
+      { label: "Console", goto: "story_farmer_3" },
+      { label: "Leave", goto: "story_farmer_1" }
+    ]
+  },
+  {
+    name: "story_farmer_3",
+    label: "Farmer",
+    description: `
+    "Am I the keeper of the wheat?
+    ... or is it the keeper of me?"
+`,
+
+    type: "dialogue",
+    options: [
+      { label: "Silently leave", goto: "story_farmer_1" }
+    ]
+  },
+
   {
     name: "story_scarecrows_1",
     label: "Scarecrows",

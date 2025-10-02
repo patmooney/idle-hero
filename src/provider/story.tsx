@@ -179,7 +179,7 @@ export const StoryProvider: ParentComponent = (props) => {
       time: [d.getHours(), d.getMinutes(), d.getSeconds()].join(":"),
       type
     };
-    setLog([...log().slice(Math.min(log()?.length - 99, 0)), item]);
+    setLog([...log().slice(Math.min(log()?.length - 999, 0)), item]);
   }
 
   const onEquip = (item: IItemEquipable) => {

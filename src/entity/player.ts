@@ -46,9 +46,7 @@ export class Player implements IPlayer {
       const min = Math.round(totalEqMin * strRatio);
       const max = Math.round(totalEqMax * strRatio);
 
-        return [100, 100];
-
-//      return [min, max];
+      return [min, max];
     }
 
     attackRate() {
