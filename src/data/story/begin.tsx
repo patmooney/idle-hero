@@ -1,4 +1,5 @@
 import { IStory } from "../types";
+import {Speech} from "./format";
 
 const story: IStory[] = [
   {
@@ -8,6 +9,8 @@ const story: IStory[] = [
     type: "dialogue",
     options: [
       { label: "Visit Farm", goto: "story_farmer_1" },
+      { label: "Leave the town", goto: "story_forest_1" },
+      { label: "Merchants", goto: "story_town_merchants_1" },
       { label: "Home", goto: "story_home_1" },
     ]
   },
@@ -46,11 +49,7 @@ const story: IStory[] = [
     label: "Farmer",
     description: <>
       You approach, he holds your wrist loosely like an exhausted child.
-      <div class="font-bold m-2">
-        <div>" .. Loathsome shadowed cloaks</div>
-        <div>Golden light shimmering, blind eyes</div>
-        <div>Fear, is Death knocking? .. "</div>
-      </div>
+      <Speech lines={[`Loathsome shadowed cloaks`, `Golden light shimmering, blind eyes`, `Fear, is Death knocking?`]} />
       He sits and cries.
     </>,
     type: "dialogue",
@@ -62,22 +61,19 @@ const story: IStory[] = [
   {
     name: "story_farmer_3",
     label: "Farmer",
-    description: <div class="font-bold m-2">
-      <div>" .. Am *I* the keeper of the wheat?</div>
-      <div>... or is it the keeper of me? .. "</div>
-    </div>,
+    description: <Speech lines={[`Am *I* the keeper of the wheat?`, `... or is it the keeper of me?`]} />,
 
     type: "dialogue",
     options: [
       { label: "Silently leave", goto: "story_farmer_1" }
     ]
   },
-
   {
     name: "story_scarecrows_1",
     label: "Scarecrows",
     description: "Fighting scarecrows",
     type: "encounter",
+    cooldown: 20,
     encounters: [
       {
         name: "enc_scarecrow_1",

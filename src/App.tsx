@@ -12,6 +12,7 @@ import { Story_Dialogue } from './components/story-dialogue';
 import { Story_Invent } from './components/story-invent';
 import { Story_Skills } from './components/story-skills';
 import { Action_Encounter } from './components/action-encounter';
+import { Action_Task } from './components/action-task';
 import { Story_Stats } from "./components/story-stats";
 
 type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu";
@@ -87,6 +88,9 @@ export const ActionView: Component = () => {
       </Match>
       <Match when={ctx?.story().type === "encounter"}>
         <Action_Encounter />
+      </Match>
+      <Match when={ctx?.story().type === "task"}>
+        <Action_Task />
       </Match>
     </Switch>
   );

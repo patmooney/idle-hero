@@ -12,6 +12,7 @@ export interface IEncounter {
 
 export type StoryType = "task" | "encounter" | "dialogue";
 export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
+export type ItemUtilityType = "axe" | "pickaxe";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
 export type CraftingType = "basic" | "weapon" | "armour";
 
@@ -42,6 +43,7 @@ export interface IItemBase {
 }
 
 export interface IItemEquipable extends IItemBase {
+    utilityType?: ItemUtilityType;
     equipSlot: EquipSlotType;
     equipRequirements?: Partial<IPlayerStats>;
     masteryType?: MasteryType;
@@ -81,18 +83,20 @@ export type IOption = {
 }
 
 export interface IStory {
-    name: string;
     type: StoryType;
+    name: string;
     label: string;
     description: string | JSXElement;
-    encounters?: IEncounter[];
-    duration?: number;
-    cooldown?: number;
+    // dialogue
     options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
-
-    // Does this story precipitate any items or skills on entry?
-    items?: IItem[];
-    skills?: ISkill[];
+    // encounter
+    encounters?: IEncounter[];
+    cooldown?: number;
+    // task
+    duration?: number;
+    noRepeat?: boolean;
+    items?: IDrop[];
+    onComplete?: () => void;
 }
 
 export interface IStats {

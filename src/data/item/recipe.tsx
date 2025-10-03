@@ -27,12 +27,22 @@ const items: IRecipe[] = [
   (item) => ({
     ...item,
     use: (ctx: IStoryContext) => {
-      if (!ctx.player.recipes.includes(item.craftableItem)) {
-        ctx.setPlayer("recipes", [...ctx.player.recipes, item.craftableItem]);
-        ctx.setState("prohibitedItems", [...ctx.state.prohibitedItems, item.name]);
-      }
-      ctx.removeInventory(item.name);
-      return true;
+      ctx.onTask({
+        noRepeat: true,
+        label: `Learning`,
+        description: item.label,
+        duration: 100,
+        onComplete: () => {
+          if (!ctx.player.recipes.includes(item.craftableItem)) {
+            ctx.setPlayer("recipes", [...ctx.player.recipes, item.craftableItem]);
+            ctx.setState("prohibitedItems", [...ctx.state.prohibitedItems, item.name]);
+          }
+          ctx.removeInventory(item.name);
+          ctx.onNavigate("_back");
+          return true;
+        }
+      });
+      return false;
     }
   })
 );

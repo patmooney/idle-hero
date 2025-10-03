@@ -14,7 +14,7 @@ export class Player implements IPlayer {
       this.mastery = player.mastery ?? {};
       this.recipes = player.recipes ?? [];
       this.stats = player.stats ?? {
-        gold: 0,
+        gold: 120,
         experience: 0,
         health: 10,
         maxHealth: 10,

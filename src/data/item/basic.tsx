@@ -40,6 +40,14 @@ const items: IItem[] = [
     stats: {
       physRes: 1
     }
+  },
+  {
+    name: "utility_axe_1",
+    label: "Rusty axe",
+    stackable: false,
+    equipSlot: "weapon",
+    utilityType: "axe",
+    stats: {}
   }
 ];
 

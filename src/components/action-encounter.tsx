@@ -1,7 +1,8 @@
-import { Component, createSignal, onMount, Show, useContext } from "solid-js";
+import { Component, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
 import { Progress, Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
 import { IEncounter } from "../data/types";
+import { MIN_TICK_TIME_MS } from "../utils/constants";
 
 export const Action_Encounter: Component = () => {
   const ctx = useContext(StoryContext);
@@ -10,6 +11,8 @@ export const Action_Encounter: Component = () => {
   const [count, setCount] = createSignal<number>(0);
   const [health, setHealth] = createSignal<number>();
   const [encounter, setEncounter] = createSignal<IEncounter>();
+
+  let timer: number | undefined;
 
   onMount(() => {
     setAttackRate(ctx?.player.attackRate() ?? 25);
@@ -71,20 +74,28 @@ export const Action_Encounter: Component = () => {
             <span class="font-bold m-1">{/*@once*/drops?.map((d) => d.label).join(", ")}</span>
           </>, "drop"
         );
-      } else {
       }
-      return onFinish();
+      if (story.noRepeat) {
+        return;
+      }
+      timer = setTimeout(() => onFinish(), (story.cooldown ?? 0) * MIN_TICK_TIME_MS);
     }
 
     setHealth(Math.max(newHealth, 0));
   };
+
+  onCleanup(() => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  });
 
   return (
     <div class="flex flex-col gap-1 p-1 h-full">
       <div class="bg-black">
         Attacking ({count()})
       </div>
-      <Show when={encounter()}>
+      <Show when={encounter()} fallback={"Waiting.. Searching.. Wondering.."}>
         <div class="text-red-800">{encounter()?.label}</div>
         <div class="h-8">
           <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />

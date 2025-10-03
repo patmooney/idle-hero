@@ -8,7 +8,7 @@ const items: IItem[] = [
     maxStack: 100
   },
   {
-    name: "wood_1",
+    name: "wood_log_1",
     label: "Wooden log",
     stackable: true,
     maxStack: 100

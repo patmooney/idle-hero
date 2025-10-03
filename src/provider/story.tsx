@@ -1,5 +1,5 @@
 import { createContext, Accessor, ParentComponent, createSignal, JSXElement } from "solid-js";
-import { IItem, IItemEquipable, IPlayerStats, MasteryType } from "../data/types";
+import { IItem, IItemEquipable, IPlayerStats, IStory, MasteryType } from "../data/types";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
 import itemData from "../data/item";
@@ -31,6 +31,7 @@ export interface IStoryContext {
   onAddStat: (name: keyof IPlayerStats, amount: number) => void;
   onAddMastery: (name: MasteryType, amount: number) => void;
   onLog: (msg: string | JSXElement, type?: LogType) => void;
+  onTask: (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => void;
   addInventory: (item: IItem | string, count?: number) => void;
   removeInventory: (item: IItem | string, count?: number) => void;
 };
@@ -157,7 +158,7 @@ export const StoryProvider: ParentComponent = (props) => {
       if (navStack().length > 1) {
         setNavStack(navStack().slice(0, -1));
       }
-    } else {
+    } else if (navStack().at(-1) !== name) {
       setNavStack([...navStack(), name]);
     }
     setStory(loadStory(name));
@@ -227,10 +228,22 @@ export const StoryProvider: ParentComponent = (props) => {
     return false;
   }
 
+  const onTask = (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => {
+    setNavStack([...navStack(), "task"]);
+    setStory(
+      new Story({
+        name: "task",
+        type: "task",
+        ...opts,
+        onComplete: opts.noRepeat ? opts.onComplete ?? (() => onNavigate("_back")) : undefined
+      })
+    );
+  };
+
   const storyValue = {
     story, onNavigate, onAddStat, player, state, setState,
     setPlayer, addInventory, removeInventory, log, onLog, onAddMastery,
-    onEquip, onUnequip
+    onEquip, onUnequip, onTask
   };
 
   return <StoryContext.Provider value={storyValue}>{props.children}</StoryContext.Provider>
