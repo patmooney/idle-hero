@@ -1,10 +1,10 @@
-import {MAX_MASTERY} from "../../utils/constants";
+import { MAX_MASTERY } from "../../utils/constants";
 import { IMastery, IMasteryBonus } from "../types";
 
-const mastery: IMastery[] = [
+const utilityMastery: IMastery[] = [
   {
-    name: "unarmed",
-    label: "Unarmed",
+    name: "woodcutting",
+    label: "Woodcutting",
     bonus: new Array(MAX_MASTERY + 1).fill(null).map(
       // Over 500 levels add cumulative stats
       // level 5    - attMax: 1
@@ -17,11 +17,14 @@ const mastery: IMastery[] = [
         }
         return {
           level: idx,
-          stats: { attMin: idx % 10 === 0 ? 1 : 0, attMax: 1, attSpeed: idx % 50 === 0 ? 0.1 : 0 }
+          stats: { durationModifier: idx % 10 === 0 ? 10 : 0 }, // i.e. every 10 levels, take 10 ticks off the duration, by level 100 a basic log will take 1 tick
+          dropModifiers: [
+            { name: "wood_log_1", chance: idx % 50 === 0 ? 1 : 0 }
+          ]
         };
       }
     ).filter(Boolean) as IMasteryBonus[]
   }
 ];
 
-export default mastery;
+export default utilityMastery;

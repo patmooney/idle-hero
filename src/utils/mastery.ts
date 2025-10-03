@@ -22,3 +22,18 @@ export const cumulateBonus = (mastery: MasteryType, exp: number): IStats => {
         }, {}
     ) ?? {};
 }
+
+export const cumulateDrop = (dropName: string, mastery: MasteryType, exp: number): number => {
+    const data = masteryData[mastery];
+    if (!data) {
+        return 0;
+    }
+    const level = getLevel(exp, masteryXP);
+    const stats = data.bonus.filter(
+        (bonus) => bonus.level <= level
+    );
+    return stats?.reduce<number>(
+        (acc, stat) => acc + (stat.dropModifiers?.find((sm) => sm.name === dropName)?.chance ?? 0)
+        , 0
+    );
+}

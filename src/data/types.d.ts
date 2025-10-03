@@ -11,7 +11,7 @@ export interface IEncounter {
 }
 
 export type StoryType = "task" | "encounter" | "dialogue";
-export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing";
+export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing" | "woodcutting";
 export type ItemUtilityType = "axe" | "pickaxe";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
 export type CraftingType = "basic" | "weapon" | "armour";
@@ -66,6 +66,7 @@ export interface IDrop {
 export interface IMasteryBonus {
     level: number;
     stats: IStats;
+    dropModifiers?: Idrop[];
 }
 
 export interface IMastery {
@@ -97,6 +98,8 @@ export interface IStory {
     noRepeat?: boolean;
     items?: IDrop[];
     onComplete?: () => void;
+    masteryType?: MasteryType;
+    experience?: number;
 }
 
 export interface IStats {
@@ -108,6 +111,9 @@ export interface IStats {
     attMax?: number;
     physRes?: number;
     magRes?: number;
+
+    // i.e. make tasks faster
+    durationModifier?: number;
 }
 
 export interface IAttributes {

@@ -1,13 +1,22 @@
-import { Component, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
+import { Component, createMemo, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
 import { Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
 import { MIN_TICK_TIME_MS } from "../utils/constants";
+import {cumulateBonus} from "../utils/mastery";
 
 export const Action_Task: Component = () => {
   const ctx = useContext(StoryContext);
   const [active, setActive] = createSignal<boolean>(false);
   let timer: number | undefined;
 
+  const duration = createMemo(() => {
+    const masteryType = ctx?.story().masteryType;
+    if (masteryType) {
+      const cumulative = cumulateBonus(masteryType, ctx.player.mastery[masteryType] ?? 0);
+      return Math.max(1, (ctx?.story().duration ?? 100) - (cumulative.durationModifier ?? 0));
+    }
+    return ctx?.story().duration ?? 100;
+  });
   onMount(() => {
     setActive(true);
   });
@@ -28,9 +37,13 @@ export const Action_Task: Component = () => {
         <span class="text-red-800 font-bold m-1">{/*@once*/story.description}</span>
       </>, "good"
     );
-    const drops = story.getItems()?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name)).filter(
-      (drop) => !!ctx?.addInventory(drop)
-    );
+    if (story.masteryType) {
+      ctx?.onAddMastery(story.masteryType, story.experience ?? 0);
+    }
+    const drops = story.getItems(undefined, story.masteryType, story.masteryType ? player.mastery[story.masteryType] : undefined)?.
+      filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name)).filter(
+        (drop) => !!ctx?.addInventory(drop)
+      );
     if (drops?.length) {
       ctx?.onLog(
         <>
@@ -59,7 +72,7 @@ export const Action_Task: Component = () => {
       <Show when={active()} fallback={"Waiting.. Searching.. Wondering.."}>
         <div class="text-red-800">{ctx?.story().description}</div>
         <div class="h-8">
-          <Ticker ticks={ctx?.story().duration ?? 100} onFinish={onFinish} label="Task" showPc />
+          <Ticker ticks={duration()} onFinish={onFinish} label="Task" showPc />
         </div>
       </Show>
     </div>

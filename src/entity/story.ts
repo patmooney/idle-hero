@@ -1,7 +1,8 @@
-import { IDrop, IEncounter, IItem, IOption, ISkill, IStory, StoryType } from "../data/types";
+import { IDrop, IEncounter, IItem, IOption, ISkill, IStory, MasteryType, StoryType } from "../data/types";
 import itemData from "../data/item";
 import { IStoryContext } from "../provider/story";
 import { JSXElement } from "solid-js";
+import {cumulateDrop} from "../utils/mastery";
 
 export class Story implements IStory {
     name: string;
@@ -16,6 +17,8 @@ export class Story implements IStory {
     skills?: ISkill[];
     options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
     onComplete?: (() => void) | undefined;
+    masteryType?: MasteryType | undefined;
+    experience?: number | undefined;
 
     constructor(story: IStory) {
         this.label = story.label;
@@ -53,12 +56,21 @@ export class Story implements IStory {
         return this.getItems(enc?.drops)
     }
 
-    getItems(drops: IDrop[] = this.items ?? []): IItem[] | undefined {
-        const dropped = drops.filter(
-            (drop) => {
-                return Math.random() <= drop.chance;
+    getItems(drops: IDrop[] = this.items ?? [], masteryType?: MasteryType, exp?: number): IItem[] | undefined {
+        let dropped: IDrop[] = [];
+        for (let drop of drops) {
+            let chance = drop.chance;
+            if (masteryType && exp) {
+                chance = chance + cumulateDrop(drop.name, masteryType, exp);
+                console.log({ drop, chance });
             }
-        );
+            while (chance > 0) {
+                if (Math.random() <= chance) {
+                    dropped.push(drop);
+                }
+                chance--;
+            }
+        }
         return dropped?.map(
             (drop) => itemData[drop.name]
         ).filter(Boolean) as IItem[];

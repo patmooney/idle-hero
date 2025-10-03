@@ -13,9 +13,18 @@ export const getProgress = (exp: number, lvls = levelsXP) => {
         return 0;
     }
     const nextLevelExpIdx = lvls.findIndex((xp) => xp > exp);
+    if (nextLevelExpIdx < 0 && exp > 0) { // max level
+        return 1;
+    }
     const base = exp - (lvls[nextLevelExpIdx - 1] ?? 0);
     const required = lvls[nextLevelExpIdx] - (lvls[nextLevelExpIdx - 1] ?? 0);
     return base / required;
 }
 
-export const getLevel = (exp: number, lvls = levelsXP) => lvls.findIndex((xp) => xp > exp);
+export const getLevel = (exp: number, lvls = levelsXP) => {
+    const lvl = lvls.findIndex((xp) => xp > exp);
+    if (lvl < 0 && exp > 0) { // max level
+        return lvls.length;
+    }
+    return lvl;
+}

@@ -20,6 +20,8 @@ const forest: IStory[] = [
     label: "Surrounded by trees",
     description: "Chopping wood",
     duration: 100,
+    masteryType: "woodcutting",
+    experience: 10000,
     items: [{ name: "wood_log_1", chance: 1 }]
   }
 ];
