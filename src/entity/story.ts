@@ -1,4 +1,4 @@
-import { IDrop, IEncounter, IItem, IOption, ISkill, IStory, MasteryType, StoryType } from "../data/types";
+import { IDrop, IEncounter, IItem, IOption, ISkill, IStory, ItemUtilityType, MasteryType, StoryType } from "../data/types";
 import itemData from "../data/item";
 import { IStoryContext } from "../provider/story";
 import { JSXElement } from "solid-js";
@@ -19,6 +19,7 @@ export class Story implements IStory {
     onComplete?: (() => void) | undefined;
     masteryType?: MasteryType | undefined;
     experience?: number | undefined;
+    utilityType?: ItemUtilityType | undefined;
 
     constructor(story: IStory) {
         this.label = story.label;
@@ -62,7 +63,6 @@ export class Story implements IStory {
             let chance = drop.chance;
             if (masteryType && exp) {
                 chance = chance + cumulateDrop(drop.name, masteryType, exp);
-                console.log({ drop, chance });
             }
             while (chance > 0) {
                 if (Math.random() <= chance) {

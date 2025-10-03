@@ -1,13 +1,15 @@
-import { Component, createMemo, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
+import { Component, createEffect, createMemo, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
 import { Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
-import { MIN_TICK_TIME_MS } from "../utils/constants";
-import {cumulateBonus} from "../utils/mastery";
+import { cumulateBonus } from "../utils/mastery";
+import { CommandContext, TickEvent } from "../provider/commander";
 
 export const Action_Task: Component = () => {
   const ctx = useContext(StoryContext);
+  const commander = useContext(CommandContext);
+
   const [active, setActive] = createSignal<boolean>(false);
-  let timer: number | undefined;
+  const [wait, setWait] = createSignal<number>(0);
 
   const duration = createMemo(() => {
     const masteryType = ctx?.story().masteryType;
@@ -17,6 +19,20 @@ export const Action_Task: Component = () => {
     }
     return ctx?.story().duration ?? 100;
   });
+
+  createEffect(() => {
+    const [player, story] = [ctx?.player, ctx?.story()];
+    if (!player || !story) {
+      return;
+    }
+    if (!story.utilityType) {
+      return;
+    }
+    if (!player.equipment.find((eq) => eq.utilityType === story.utilityType)) {
+      ctx?.onNavigate("_back");
+    }
+  })
+
   onMount(() => {
     setActive(true);
   });
@@ -55,13 +71,20 @@ export const Action_Task: Component = () => {
     if (story.noRepeat) {
       return story.onComplete?.() ?? ctx?.onNavigate("_back");
     }
-    timer = setTimeout(() => onFinish(), (story.cooldown ?? 0) * MIN_TICK_TIME_MS);
+    setWait(story.cooldown ?? 0);
+    commander?.evt.addEventListener(TickEvent.type, doWait);
   }
 
-  onCleanup(() => {
-    if (timer) {
-      clearTimeout(timer);
+  const doWait = () => {
+    if (wait() <= 0) {
+      commander?.evt.removeEventListener(TickEvent.type, doWait);
+      return onFinish();
     }
+    setWait(wait() - 1);
+  };
+
+  onCleanup(() => {
+    commander?.evt.removeEventListener(TickEvent.type, doWait);
   });
 
   return (

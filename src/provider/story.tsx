@@ -1,6 +1,6 @@
-import { createContext, Accessor, ParentComponent, createSignal, JSXElement } from "solid-js";
+import { createContext, Accessor, ParentComponent, createSignal, JSXElement, onMount } from "solid-js";
 import { IItem, IItemEquipable, IPlayerStats, IStory, MasteryType } from "../data/types";
-import { createStore, SetStoreFunction, Store } from "solid-js/store";
+import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
 
 import itemData from "../data/item";
 import storyData from "../data/story";
@@ -49,6 +49,26 @@ export const StoryProvider: ParentComponent = (props) => {
   const [log, setLog] = createSignal<ILogItem[]>([]);
 
   const onShouldDrop = (_: IItem) => true;
+
+  onMount(() => {
+    const save = JSON.parse(window.localStorage.getItem("save") ?? "null") as { state: GameState, player: Player, nav: string[], story: string } | null;
+    if (save) {
+      setPlayer(save.player);
+      setState(save.state);
+      setNavStack(save.nav);
+      setStory(loadStory(save.story));
+    }
+  });
+
+  /* SAVE STATE */
+  const saveState = () => {
+    window.localStorage.setItem(
+      "save",
+      JSON.stringify({ player: unwrap(player), story: story().name, state: unwrap(state), nav: navStack() })
+    )
+  };
+  window.addEventListener("beforeunload", saveState);
+  setInterval(saveState, 10000);
 
   const addInventory = (item: IItem | string, count = 1): number => {
     if (typeof item === "string") {
@@ -149,14 +169,17 @@ export const StoryProvider: ParentComponent = (props) => {
 
     // number of items added to bag
   const onNavigate = (name: string) => {
-    if (name !== "_back" && !storyData[name]) {
+    const isBack = /^_back/.test(name);
+    if (!isBack && !storyData[name]) {
       console.error(`Unknown story ${name}`);
       return;
     }
-    if (name === "_back") {
-      name = navStack().at(-2) ?? DEFAULT_STORY;
+    if (isBack) {
+      const [_, _steps] = name.split(".");
+      const steps = Math.min(parseInt(_steps ?? "1"), navStack().length + 1);
+      name = navStack().at(-1 - steps) ?? DEFAULT_STORY;
       if (navStack().length > 1) {
-        setNavStack(navStack().slice(0, -1));
+        setNavStack(navStack().slice(0, -steps));
       }
     } else if (navStack().at(-1) !== name) {
       setNavStack([...navStack(), name]);

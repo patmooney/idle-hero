@@ -21,7 +21,9 @@ const forest: IStory[] = [
     description: "Chopping wood",
     duration: 100,
     masteryType: "woodcutting",
-    experience: 10000,
+    cooldown: 10,
+    experience: 1,
+    utilityType: "axe",
     items: [{ name: "wood_log_1", chance: 1 }]
   }
 ];

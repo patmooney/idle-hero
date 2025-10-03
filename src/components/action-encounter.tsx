@@ -2,17 +2,17 @@ import { Component, createSignal, onCleanup, onMount, Show, useContext } from "s
 import { Progress, Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
 import { IEncounter } from "../data/types";
-import { MIN_TICK_TIME_MS } from "../utils/constants";
+import { CommandContext, TickEvent } from "../provider/commander";
 
 export const Action_Encounter: Component = () => {
   const ctx = useContext(StoryContext);
-  const [attackRate, setAttackRate] = createSignal<number>(25);
+  const commander = useContext(CommandContext);
 
+  const [attackRate, setAttackRate] = createSignal<number>(25);
+  const [wait, setWait] = createSignal<number>(0);
   const [count, setCount] = createSignal<number>(0);
   const [health, setHealth] = createSignal<number>();
   const [encounter, setEncounter] = createSignal<IEncounter>();
-
-  let timer: number | undefined;
 
   onMount(() => {
     setAttackRate(ctx?.player.attackRate() ?? 25);
@@ -28,6 +28,7 @@ export const Action_Encounter: Component = () => {
     if (!player || !story) {
       return;
     }
+
     setAttackRate(ctx?.player.attackRate() ?? 25);
 
     if (!enc) {
@@ -78,16 +79,23 @@ export const Action_Encounter: Component = () => {
       if (story.noRepeat) {
         return;
       }
-      timer = setTimeout(() => onFinish(), (story.cooldown ?? 0) * MIN_TICK_TIME_MS);
+      setWait(story.cooldown ?? 0);
+      commander?.evt.addEventListener(TickEvent.type, doWait);
     }
 
     setHealth(Math.max(newHealth, 0));
   };
 
-  onCleanup(() => {
-    if (timer) {
-      clearTimeout(timer);
+  const doWait = () => {
+    if (wait() <= 0) {
+      commander?.evt.removeEventListener(TickEvent.type, doWait);
+      return onFinish();
     }
+    setWait(wait() - 1);
+  };
+
+  onCleanup(() => {
+    commander?.evt.removeEventListener(TickEvent.type, doWait);
   });
 
   return (

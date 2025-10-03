@@ -55,7 +55,7 @@ const story: IStory[] = [
     type: "dialogue",
     options: [
       { label: "Console", goto: "story_farmer_3" },
-      { label: "Leave", goto: "story_farmer_1" }
+      { label: "Leave", goto: "_back" }
     ]
   },
   {
@@ -65,7 +65,7 @@ const story: IStory[] = [
 
     type: "dialogue",
     options: [
-      { label: "Silently leave", goto: "story_farmer_1" }
+      { label: "Silently leave", goto: "_back.2" }
     ]
   },
   {

@@ -100,6 +100,7 @@ export interface IStory {
     onComplete?: () => void;
     masteryType?: MasteryType;
     experience?: number;
+    utilityType?: ItemUtilityType;
 }
 
 export interface IStats {
