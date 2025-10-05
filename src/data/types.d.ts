@@ -107,6 +107,9 @@ export interface IStats {
     maxHealth?: number;
     strength?: number;
     agility?: number;
+    dexterity?: number;
+    intelligence?: number;
+    charisma?: number;
     attSpeed?: number;
     attMin?: number;
     attMax?: number;

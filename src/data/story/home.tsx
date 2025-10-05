@@ -34,7 +34,15 @@ const story: IStory[] = [
       return ctx.player.recipes.map((r) => itemData[r]).filter((i) => (i as IItemCraftable).craftType === "basic")
         .map((i) => ({
           label: i.label,
-          action: (ctx) => craftItem(ctx, i as IItemCraftable),
+          action: (ctx: IStoryContext) => {
+            ctx.onTask({
+              noRepeat: true,
+              label: `Crafting`,
+              description: i.label,
+              duration: 100,
+              onComplete: () => craftItem(ctx, i as IItemCraftable)
+            });
+          },
           isDisabled: !hasIngredients(ctx, i as IItemCraftable),
           subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing[0]].label} (${ing[1]})`).join(" - ")
         }));

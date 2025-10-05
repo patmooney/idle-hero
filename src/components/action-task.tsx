@@ -10,6 +10,7 @@ export const Action_Task: Component = () => {
 
   const [active, setActive] = createSignal<boolean>(false);
   const [wait, setWait] = createSignal<number>(0);
+  const [remaining, setRemaining] = createSignal<number>(0);
 
   const duration = createMemo(() => {
     const masteryType = ctx?.story().masteryType;
@@ -33,6 +34,26 @@ export const Action_Task: Component = () => {
     }
   })
 
+  createEffect(() => {
+    if (!duration()) {
+      return;
+    }
+    if (commander?.pause()) {
+        setRemaining(duration());
+        commander?.evt.addEventListener(TickEvent.type, onSyncAttack);
+    } else {
+        commander?.evt.removeEventListener(TickEvent.type, onSyncAttack);
+    }
+  });
+
+  const onSyncAttack = () => {
+    if (remaining() <= 0 && active()) {
+      onFinish();
+    } else {
+      setRemaining(remaining() - 1);
+    }
+  };
+
   onMount(() => {
     setActive(true);
   });
@@ -43,6 +64,7 @@ export const Action_Task: Component = () => {
       return;
     }
     if (!active()) {
+      setRemaining(duration());
       setActive(true);
       return;
     }
@@ -88,16 +110,18 @@ export const Action_Task: Component = () => {
   });
 
   return (
-    <div class="flex flex-col gap-1 p-1 h-full">
-      <div class="bg-black">
-        {ctx?.story().label}
-      </div>
-      <Show when={active()} fallback={"Waiting.. Searching.. Wondering.."}>
-        <div class="text-red-800">{ctx?.story().description}</div>
-        <div class="h-8">
-          <Ticker ticks={duration()} onFinish={onFinish} label="Task" showPc />
+    <Show when={!commander?.pause()}>
+      <div class="flex flex-col gap-1 p-1 h-full">
+        <div class="bg-black">
+          {ctx?.story().label}
         </div>
-      </Show>
-    </div>
+        <Show when={active()} fallback={"Waiting.. Searching.. Wondering.."}>
+          <div class="text-red-800">{ctx?.story().description}</div>
+          <div class="h-8">
+            <Ticker ticks={duration()} onFinish={onFinish} label="Task" showPc />
+          </div>
+        </Show>
+      </div>
+    </Show>
   );
 };

@@ -1,10 +1,18 @@
 import { Component, createSignal, For, Show, useContext } from "solid-js";
 import { StoryContext } from "../provider/story";
 import { IItem, IItemEquipable } from "../data/types";
+import itemData from "../data/item";
 
 export const Story_Invent: Component = () => {
   const ctx = useContext(StoryContext);
   const [selected, setSelected] = createSignal<IItem | null>();
+
+  const onSelect = (item: Pick<IItem, "name"> | null) => {
+    if (!item) {
+      return;
+    }
+    setSelected(itemData[item.name]);
+  };
 
   const onUse = () => {
     const sel = selected();
@@ -30,7 +38,7 @@ export const Story_Invent: Component = () => {
     <div class="h-full relative">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
         <For each={ctx?.player.invent ?? []}>{
-          (item) => <InventorySlot item={item} onSelect={() => setSelected(item)} />
+          (item) => <InventorySlot item={item} onSelect={() => onSelect(item)} />
         }</For>
       </div>
       <Show when={selected()}>

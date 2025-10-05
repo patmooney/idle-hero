@@ -1,4 +1,4 @@
-import {MAX_MASTERY} from "../../utils/constants";
+import { MAX_MASTERY } from "../../utils/constants";
 import { IMastery, IMasteryBonus } from "../types";
 
 const mastery: IMastery[] = [

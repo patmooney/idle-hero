@@ -5,3 +5,4 @@ export const MAX_INVENT = 20;
 export const BASE_ATTACK_DELAY = 1;
 export const MIN_TICK_TIME_MS = 100;
 export const MAX_MASTERY = 500;
+export const MAX_CATCHUP_MS = 12 * 60 * 60 * 1000;

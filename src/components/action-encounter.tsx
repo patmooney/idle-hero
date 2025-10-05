@@ -1,4 +1,4 @@
-import { Component, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
+import { Component, createEffect, createSignal, onCleanup, onMount, Show, useContext } from "solid-js";
 import { Progress, Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
 import { IEncounter } from "../data/types";
@@ -14,6 +14,22 @@ export const Action_Encounter: Component = () => {
   const [health, setHealth] = createSignal<number>();
   const [encounter, setEncounter] = createSignal<IEncounter>();
 
+  createEffect(() => {
+    if (commander?.pause()) {
+        commander?.evt.addEventListener(TickEvent.type, onSyncAttack);
+    } else {
+        commander?.evt.removeEventListener(TickEvent.type, onSyncAttack);
+    }
+  });
+
+  const onSyncAttack = () => {
+    if (attackRate() <= 0 && encounter()) {
+      onFinish();
+    } else {
+      setAttackRate(attackRate() - 1);
+    }
+  };
+
   onMount(() => {
     setAttackRate(ctx?.player.attackRate() ?? 25);
     setEncounter(ctx?.story().getEncounter());
@@ -21,6 +37,7 @@ export const Action_Encounter: Component = () => {
   });
 
   const onFinish = () => {
+    const shouldLog = !commander?.pause();
     const [ player, story ] = [ctx?.player, ctx?.story()];
     const enc = encounter();
     const h = health();
@@ -45,21 +62,25 @@ export const Action_Encounter: Component = () => {
     const damage = min + Math.round(Math.random() * (max - min));
     const newHealth = h - Math.min(damage, h);
 
-    ctx?.onLog(
-      <>
-        You hit the <span class="text-red-800 font-bold">{/*@once*/enc.label}</span> for <span class="text-green-800 font-bold">{/*@once*/damage}</span> damage
-      </>, "basic"
-    );
+    if (shouldLog) {
+      ctx?.onLog(
+        <>
+          You hit the <span class="text-red-800 font-bold">{/*@once*/enc.label}</span> for <span class="text-green-800 font-bold">{/*@once*/damage}</span> damage
+        </>, "basic"
+      );
+    }
 
     ctx?.onAddMastery(ctx.player.weaponMastery(), damage);
 
     if (newHealth <= 0) {
-      ctx?.onLog(
-        <>
-          You killed the
-          <span class="text-red-800 font-bold m-1">{/*@once*/enc.label}</span>
-        </>, "good"
-      );
+      if (shouldLog) {
+        ctx?.onLog(
+          <>
+            You killed the
+            <span class="text-red-800 font-bold m-1">{/*@once*/enc.label}</span>
+          </>, "good"
+        );
+      }
       setCount(count() + 1);
       setEncounter(undefined);
       if (enc.experience) {
@@ -68,7 +89,7 @@ export const Action_Encounter: Component = () => {
       const drops = story.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name)).filter(
         (drop) => !!ctx?.addInventory(drop)
       );
-      if (drops?.length) {
+      if (drops?.length && shouldLog) {
         ctx?.onLog(
           <>
             It dropped:
@@ -99,19 +120,21 @@ export const Action_Encounter: Component = () => {
   });
 
   return (
-    <div class="flex flex-col gap-1 p-1 h-full">
-      <div class="bg-black">
-        Attacking ({count()})
+    <Show when={!commander?.pause()}>
+      <div class="flex flex-col gap-1 p-1 h-full">
+        <div class="bg-black">
+          Attacking ({count()})
+        </div>
+        <Show when={encounter()} fallback={"Waiting.. Searching.. Wondering.."}>
+          <div class="text-red-800">{encounter()?.label}</div>
+          <div class="h-8">
+            <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />
+          </div>
+          <div class="h-8">
+            <Progress type="red" max={encounter()!.health} value={health()!} label="Health" showNumber></Progress>
+          </div>
+        </Show>
       </div>
-      <Show when={encounter()} fallback={"Waiting.. Searching.. Wondering.."}>
-        <div class="text-red-800">{encounter()?.label}</div>
-        <div class="h-8">
-          <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />
-        </div>
-        <div class="h-8">
-          <Progress type="red" max={encounter()!.health} value={health()!} label="Health" showNumber></Progress>
-        </div>
-      </Show>
-    </div>
+    </Show>
   );
 };
