@@ -4,10 +4,11 @@ import type { IStoryContext } from "../provider/story";
 export interface IEncounter {
     name: string;
     label: string;
-    health: number;
     chance: number;
+    health: number;
     drops?: IDrop[];
     experience?: number;
+    stats?: IStats;
 }
 
 export type StoryType = "task" | "encounter" | "dialogue";
@@ -93,11 +94,12 @@ export interface IStory {
     // encounter
     encounters?: IEncounter[];
     cooldown?: number;
+    limit?: number;
     // task
     duration?: number;
     noRepeat?: boolean;
     items?: IDrop[];
-    onComplete?: () => void;
+    onComplete?: (ctx: IStoryContext) => void;
     masteryType?: MasteryType;
     experience?: number;
     utilityType?: ItemUtilityType;

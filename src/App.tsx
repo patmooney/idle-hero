@@ -79,7 +79,6 @@ const Story = () => {
         </Switch>
       </div>
       <Menu onChange={setView} view={view()} />
-      {view()} - {currentView()}
     </div>
   );
 }

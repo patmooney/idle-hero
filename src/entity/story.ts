@@ -13,6 +13,7 @@ export class Story implements IStory {
     duration?: number;
     noRepeat?: boolean;
     cooldown?: number;
+    limit?: number;
     items?: IDrop[];
     skills?: ISkill[];
     options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
@@ -44,13 +45,19 @@ export class Story implements IStory {
         if (this.type !== "encounter" || !this.encounters?.length) {
             return;
         }
-        // if monsterA has a chance of 0.5 and monsterB has a chance of 0.01 then monsterB will only spawn
-        // if rand 
         return this.encounters.sort((a, b) => a.chance - b.chance).find(
             (enc) => {
                 return rand <= enc.chance;
             }
         );
+    }
+
+    getDamage(enc: IEncounter): number | undefined {
+        const { attMin, attMax } = enc.stats ?? {};
+        if (!attMin || !attMax) {
+            return undefined;
+        }
+        return attMin + Math.round(Math.random() * (attMin - attMax));
     }
 
     getDrops(enc: IEncounter): IItem[] | undefined {

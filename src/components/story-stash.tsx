@@ -47,7 +47,6 @@ export const Story_Stash: Component = () => {
       ? ctx?.state.stash.reduce<number>((acc, i) => i?.name === item.name ? acc + i.stack : acc, 0) ?? 0
       : count;
     const added = ctx?.addInventory(item, count);
-    console.log({ item, count, added });
     ctx?.removeStash(item, added)
   };
 

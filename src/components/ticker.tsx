@@ -3,7 +3,7 @@ import { CommandContext, TickEvent } from "../provider/commander";
 
 export type TickerType = "green" | "yellow" | "blue" | "red";
 
-export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: TickerType, showPc?: boolean, showNumber?: boolean, label?: string }> = (props) => {
+export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: TickerType, showPc?: boolean, showNumber?: boolean, label?: string, isSmall?: boolean }> = (props) => {
   const commander = useContext(CommandContext)
   const [remaining, setRemaining] = createSignal<number>(props.ticks);
 
@@ -21,10 +21,10 @@ export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: Tic
   return <Progress max={props.ticks} value={props.ticks - remaining()} type={props.type} showPc={props.showPc} showNumber={props.showNumber} label={props.label} />
 }
 
-export const Progress: Component<{ max: number, value: number, type?: TickerType, label?: string, showNumber?: boolean, showPc?: boolean }> = (props) => {
+export const Progress: Component<{ max: number, value: number, type?: TickerType, label?: string, showNumber?: boolean, showPc?: boolean, isSmall?: boolean }> = (props) => {
   const pc = createMemo(() => Math.min(props.value / props.max * 100, 100));
   return (
-    <div class="w-full h-full border rounded relative text-black bg-gray-500">
+    <div class="w-full border rounded relative text-black bg-gray-500" classList={{ "h-full": !props.isSmall }}>
       <div
         class="ease-linear w-0 h-full rounded"
         style={{ width: pc() + "%" }}

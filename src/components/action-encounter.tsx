@@ -48,6 +48,11 @@ export const Action_Encounter: Component = () => {
 
     setAttackRate(ctx?.player.attackRate() ?? 25);
 
+    if (!enc && story.limit && count() >= story.limit) {
+      story.onComplete?.();
+      return;
+    }
+
     if (!enc) {
       setEncounter(ctx?.story().getEncounter());
       setHealth(encounter()?.health);
@@ -107,6 +112,32 @@ export const Action_Encounter: Component = () => {
     setHealth(Math.max(newHealth, 0));
   };
 
+  const onEnemyAttack = () => {
+    const shouldLog = !commander?.pause();
+    const [ player, story ] = [ctx?.player, ctx?.story()];
+    if (!player || !story) {
+      return;
+    }
+    const { attMin, attMax } = encounter()?.stats ?? {};
+    if (attMin === undefined || attMax === undefined) {
+      return undefined;
+    }
+    const damage = attMin + Math.round(Math.random() * (attMax - attMin));
+    if (shouldLog) {
+      ctx?.onLog(
+        <>
+          <span class="text-red-800 font-bold m-1">{/*@once*/encounter()!.label}</span> hits you for <span class="font-bold">{/*@once*/damage}</span> damage!
+        </>, "bad"
+      );
+    }
+    if (player.stats.health <= damage) {
+      // you are deid
+      ctx?.onNavigate("_start");
+      return;
+    }
+    ctx?.onAddStat("health", -damage);
+  }
+
   const doWait = () => {
     if (wait() <= 0) {
       commander?.evt.removeEventListener(TickEvent.type, doWait);
@@ -123,16 +154,30 @@ export const Action_Encounter: Component = () => {
     <Show when={!commander?.pause()}>
       <div class="flex flex-col gap-1 p-1 h-full">
         <div class="bg-black">
-          Attacking ({count()})
+          Attacking ({count()}<Show when={ctx?.story().limit}> / {ctx?.story().limit}</Show>)
         </div>
+        <Show when={!encounter() && ctx?.story().limit && count() >= (ctx.story()?.limit ?? 0)}>
+          There is nothing left here to destroy
+        </Show>
         <Show when={encounter()} fallback={"Waiting.. Searching.. Wondering.."}>
           <div class="text-red-800">{encounter()?.label}</div>
+
           <div class="h-8">
-            <Ticker ticks={attackRate()} onFinish={onFinish} label="Attack" showPc />
+            <Progress type="red" max={ctx?.player.stats.maxHealth ?? 10} value={ctx?.player.stats.health ?? 0} label="You" showNumber></Progress>
+            <div class="h-2">
+              <Ticker ticks={attackRate()} onFinish={onFinish} type="yellow" isSmall />
+            </div>
           </div>
-          <div class="h-8">
-            <Progress type="red" max={encounter()!.health} value={health()!} label="Health" showNumber></Progress>
+
+          <div class="h-8 mt-5">
+            <Progress type="red" max={encounter()!.health} value={health()!} label={encounter()?.label} showNumber></Progress>
+            <Show when={encounter()?.stats?.attSpeed}>
+              <div class="h-2">
+                <Ticker ticks={encounter()!.stats!.attSpeed!} onFinish={onEnemyAttack} type="yellow" isSmall />
+              </div>
+            </Show>
           </div>
+
         </Show>
       </div>
     </Show>

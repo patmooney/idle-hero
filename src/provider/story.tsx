@@ -265,11 +265,13 @@ export const StoryProvider: ParentComponent = (props) => {
 
 
   const stashSlots = createMemo(() => {
-    console.log(state.furniture.map((f) => furnitureData[f]));
-    return 1;
-//    state.furniture.map((f) => furnitureData[f]).filter((f) => f.type === "stash").reduce<number>((acc, f) => acc + (f.storageSize ?? 0), 0)
-  }
-  );
+    try {
+      return state.furniture.map((f) => furnitureData[f]).filter((f) => f.type === "stash").reduce<number>((acc, f) => acc + (f.storageSize ?? 0), 0);
+    } catch (err) {
+      console.error(err);
+      return 1;
+    }
+  });
 
   const removeStash = (item: IItem | string, count = 1): boolean => {
     if (!count) {
