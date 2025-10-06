@@ -11,9 +11,18 @@ const story: IStory[] = [
     type: "dialogue",
     options: [
       { label: "Build", goto: "story_home_2" },
-      { label: "Stash", goto: "story_home_3" },
+      { label: "Stash", goto: "story_stash_1" },
       { label: "Craft", goto: "story_home_4" },
     ]
+  },
+  {
+    name: "story_stash_1",
+    label: "Stash",
+    type: "dialogue",
+    description: <>
+      <div class="font-bold">Stash</div>
+      <div>Retrieve items from stash here, place in stash from your invent</div>
+    </>
   },
   {
     name: "story_home_4",

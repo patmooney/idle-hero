@@ -14,53 +14,74 @@ import { Story_Skills } from './components/story-skills';
 import { Action_Encounter } from './components/action-encounter';
 import { Action_Task } from './components/action-task';
 import { Story_Stats } from "./components/story-stats";
+import { Story_Stash } from './components/story-stash';
+import {Story_Menu} from './components/story-menu';
 
-type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu";
+type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu" | "stash";
 
 function App() {
-  const [view, setView] = createSignal<ContextScreen>("story");
 
   return (
     <>
       <StoryProvider>
         <Commander>
-          <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
-            <div class="h-3/10 bg-gray-400">
-              <div class="h-1/10">
-                <Overview />
-              </div>
-              <div class="h-9/10">
-                <ActionView />
-              </div>
-            </div>
-            <div class="h-1/10">
-              <Log />
-            </div>
-            <div class="h-5/10 bg-gray-800">
-              <Switch fallback={<div>Unknown view</div>}>
-                <Match when={view() === "story"}>
-                  <Story_Dialogue />
-                </Match>
-                <Match when={view() === "invent"}>
-                  <Story_Invent />
-                </Match>
-                <Match when={view() === "skills"}>
-                  <Story_Skills />
-                </Match>
-                <Match when={view() === "stats"}>
-                  <Story_Stats />
-                </Match>
-                <Match when={view() === "menu"}>
-                  <Story_Skills />
-                </Match>
-              </Switch>
-            </div>
-            <Menu onChange={setView} view={view()} />
-          </div>
+          <Story />
         </Commander>
       </StoryProvider>
     </>
-  )
+  );
+}
+
+const Story = () => {
+  const [view, setView] = createSignal<ContextScreen>("story");
+  const ctx = useContext(StoryContext);
+
+  const currentView = createMemo<ContextScreen>(() => {
+    if (view() === "story" && ctx?.story().name === "story_stash_1") {
+      return "stash";
+    }
+    return view();
+  });
+
+  return (
+    <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
+      <div class="h-3/10 bg-gray-400">
+        <div class="h-1/10">
+          <Overview />
+        </div>
+        <div class="h-9/10">
+          <ActionView />
+        </div>
+      </div>
+      <div class="h-1/10">
+        <Log />
+      </div>
+      <div class="h-5/10 bg-gray-800">
+        <Switch fallback={<div>Unknown view</div>}>
+          <Match when={currentView() === "story"}>
+            <Story_Dialogue />
+          </Match>
+          <Match when={currentView() === "stash"}>
+            <Story_Stash />
+          </Match>
+          <Match when={currentView() === "invent"}>
+            <Story_Invent />
+          </Match>
+          <Match when={currentView() === "skills"}>
+            <Story_Skills />
+          </Match>
+          <Match when={currentView() === "stats"}>
+            <Story_Stats />
+          </Match>
+          <Match when={currentView() === "menu"}>
+            <Story_Menu />
+          </Match>
+        </Switch>
+      </div>
+      <Menu onChange={setView} view={view()} />
+      {view()} - {currentView()}
+    </div>
+  );
 }
 
 export const Menu: Component<{ onChange: (view: ContextScreen) => void, view: ContextScreen }> = (props) => {

@@ -43,7 +43,7 @@ export const Story_Dialogue: Component = () => {
           <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => onClick({ label: "Go back", goto: "_back" })}>
             Go back
           </div>
-          <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => onClick({ label: "Back to town", goto: "story_town_1" })}>
+          <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => onClick({ label: "Back to town", goto: "_start" })}>
             Town
           </div>
         </div>

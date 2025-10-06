@@ -106,6 +106,7 @@ export const Action_Task: Component = () => {
   };
 
   onCleanup(() => {
+    commander?.evt.removeEventListener(TickEvent.type, onSyncAttack);
     commander?.evt.removeEventListener(TickEvent.type, doWait);
   });
 

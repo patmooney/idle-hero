@@ -1,13 +1,19 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
 import { StoryContext } from "../provider/story";
-import { IItem, IItemEquipable } from "../data/types";
+import { IItem } from "../data/types";
 
-export const Story_Invent: Component = () => {
+import itemData from "../data/item";
+
+export const Story_Stash: Component = () => {
   const ctx = useContext(StoryContext);
   const [selected, setSelected] = createSignal<number>();
 
+  const stashItems = createMemo(() =>
+    (ctx?.state.stash ?? []).map((s) => s ? ({ ...itemData[s.name], stack: s.stack }) : null)
+  );
+
   const onSelect = (idx: number) => {
-    if (idx < 0 || !ctx?.player.invent[idx]) {
+    if (idx < 0 || !ctx?.state.stash[idx]) {
       return;
     }
     setSelected(idx);
@@ -18,28 +24,8 @@ export const Story_Invent: Component = () => {
     if (idx < 0) {
       return;
     }
-    return ctx?.player.invent.at(idx);
+    return stashItems().at(idx);
   });
-
-  const onUse = () => {
-    const item = selectedItem();
-    if (!item || !ctx) {
-      return;
-    }
-    if (item?.use?.(ctx)) {
-      setSelected(undefined);
-    }
-  };
-
-  const onEquip = () => {
-    const item = selectedItem();
-    if (!(item as IItemEquipable)?.equipSlot || !ctx) {
-      return;
-    }
-    if (ctx.onEquip(item as IItemEquipable)) {
-      setSelected(undefined);
-    }
-  };
 
   const onRemove = (count: number) => {
     const item = selectedItem();
@@ -58,20 +44,17 @@ export const Story_Invent: Component = () => {
       return;
     }
     count = count === Infinity
-      ? ctx?.player.invent.reduce<number>((acc, i) => i?.name === item.name ? acc + (i!.stack ?? 0) : acc, 0) ?? 0
+      ? ctx?.state.stash.reduce<number>((acc, i) => i?.name === item.name ? acc + i.stack : acc, 0) ?? 0
       : count;
-
-    if (item) {
-      const added = ctx?.addStash(item, count);
-      ctx?.removeInventory(item, added)
-    };
+    const added = ctx?.addInventory(item, count);
+    console.log({ item, count, added });
+    ctx?.removeStash(item, added)
   };
-  const isInStash = createMemo(() => ctx?.navStack().includes("story_home_1"));
 
   return (
-    <div class="h-full relative">
+    <div class="h-full relative pb-2">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
-        <For each={ctx?.player.invent ?? []}>{
+        <For each={stashItems()}>{
           (item, idx) => <InventorySlot item={item} onSelect={() => onSelect(idx())} />
         }</For>
       </div>
@@ -83,24 +66,14 @@ export const Story_Invent: Component = () => {
               <div class="font-bold">{selectedItem()?.label} ({selectedItem()?.stack})</div>
             </div>
             <div class="flex flex-col gap-1 justify-between">
-              <div class="w-full flex flex-row justify-between gp-2 mb-2">
-                <Show when={selectedItem()?.use}>
-                  <button class="m-auto" onClick={onUse}>use</button>
-                </Show>
-                <Show when={(selectedItem() as IItemEquipable).equipSlot}>
-                  <button class="m-auto" onClick={onEquip}>equip</button>
-                </Show>
-              </div>
-              <Show when={isInStash()}>
-                <div class="px-2 py-1 bg-blue-300 w-full flex flex-col justify-between">
-                  <span class="font-bold text-sm text-black">Stash</span>
-                  <div class="flex flex-row justify-between gap-2 w-full">
-                    <button onClick={() => onStash(1)}>One</button>
-                    <button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</button>
-                    <button onClick={() => onStash(Infinity)}>All</button>
-                  </div>
+              <div class="px-2 py-1 bg-blue-300 w-full flex flex-col justify-between">
+                <span class="font-bold text-sm text-black">Take</span>
+                <div class="flex flex-row justify-between gap-2 w-full">
+                  <button onClick={() => onStash(1)}>One</button>
+                  <button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</button>
+                  <button onClick={() => onStash(Infinity)}>All</button>
                 </div>
-              </Show>
+              </div>
               <div class="px-2 py-1 bg-red-300 w-full flex flex-col justify-between">
                 <span class="font-bold text-sm text-black">Drop</span>
                 <div class="flex flex-row justify-between gap-2 w-full">
@@ -113,6 +86,9 @@ export const Story_Invent: Component = () => {
           </div>
         </div>
       </Show>
+      <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => ctx?.onNavigate("_back")}>
+        Leave stash
+      </div>
     </div>
   );
 }
