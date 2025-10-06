@@ -1,6 +1,7 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
 import { StoryContext } from "../provider/story";
 import { IItem, IItemEquipable } from "../data/types";
+import {Button} from "./Button";
 
 export const Story_Invent: Component = () => {
   const ctx = useContext(StoryContext);
@@ -61,12 +62,17 @@ export const Story_Invent: Component = () => {
       ? ctx?.player.invent.reduce<number>((acc, i) => i?.name === item.name ? acc + (i!.stack ?? 0) : acc, 0) ?? 0
       : count;
 
+    console.log({ item, count });
+
     if (item) {
       const added = ctx?.addStash(item, count);
+      console.log(added);
       ctx?.removeInventory(item, added)
     };
   };
-  const isInStash = createMemo(() => ctx?.navStack().includes("story_home_1"));
+  const isInStash = createMemo(() => {
+    return ctx?.navStack().includes("story_home_1");
+  });
 
   return (
     <div class="h-full relative">
@@ -78,10 +84,15 @@ export const Story_Invent: Component = () => {
       <Show when={selectedItem()}>
         <div class="absolute bottom-0 left-0 w-full border-t content-center p-2 bg-slate-500">
           <div class="flex flex-col gap-2">
-            <div class="flex flex-row justify-center relative mb-3">
+            <div class="flex flex-row justify-center relative">
               <span class="absolute left-0 top-0 font-bold cursor-pointer border-2 rounded-xl px-2 hover:bg-white hover:text-black" onClick={() => setSelected(undefined)}>X</span>
               <div class="font-bold">{selectedItem()?.label} ({selectedItem()?.stack})</div>
             </div>
+            <Show when={selectedItem()!.stats}>
+              <div class="text-sm">{
+                Object.entries(selectedItem()!.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join("")
+              }</div>
+            </Show>
             <div class="flex flex-col gap-1 justify-between">
               <div class="w-full flex flex-row justify-between gp-2 mb-2">
                 <Show when={selectedItem()?.use}>
@@ -92,21 +103,21 @@ export const Story_Invent: Component = () => {
                 </Show>
               </div>
               <Show when={isInStash()}>
-                <div class="px-2 py-1 bg-blue-300 w-full flex flex-col justify-between">
-                  <span class="font-bold text-sm text-black">Stash</span>
-                  <div class="flex flex-row justify-between gap-2 w-full">
-                    <button onClick={() => onStash(1)}>One</button>
-                    <button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</button>
-                    <button onClick={() => onStash(Infinity)}>All</button>
+                <div class="px-2 py-1 bg-blue-300 w-full flex flex-row justify-between items-center mb-2">
+                  <span class="font-bold text-xl text-black">Stash</span>
+                  <div class="flex flex-row gap-4">
+                    <Button onClick={() => onStash(1)}>One</Button>
+                    <Button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</Button>
+                    <Button onClick={() => onStash(Infinity)}>All</Button>
                   </div>
                 </div>
               </Show>
-              <div class="px-2 py-1 bg-red-300 w-full flex flex-col justify-between">
-                <span class="font-bold text-sm text-black">Drop</span>
-                <div class="flex flex-row justify-between gap-2 w-full">
-                  <button onClick={() => onRemove(1)}>One</button>
-                  <button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</button>
-                  <button onClick={() => onRemove(Infinity)}>All</button>
+              <div class="px-2 py-1 bg-red-300 w-full flex flex-row justify-between items-center">
+                <span class="font-bold text-xl text-black">Drop</span>
+                <div class="flex flex-row gap-4">
+                  <Button onClick={() => onRemove(1)}>One</Button>
+                  <Button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onRemove(Infinity)}>All</Button>
                 </div>
               </div>
             </div>

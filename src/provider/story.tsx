@@ -50,7 +50,7 @@ const loadStory = (name: string) => {
 export const StoryProvider: ParentComponent = (props) => {
   const [story, setStory] = createSignal<Story>(loadStory(DEFAULT_STORY));
   const [player, setPlayer] = createStore<Player>(new Player({}));
-  const [state, setState] = createStore<GameState>(new GameState({ furniture: ["furniture_bench_basic_1"] }));
+  const [state, setState] = createStore<GameState>(new GameState({ furniture: ["furniture_bench_basic_1", "furniture_stash_1"] }));
   const [navStack, setNavStack] = createSignal<string[]>([DEFAULT_STORY]);
   const [log, setLog] = createSignal<ILogItem[]>([]);
 
@@ -269,7 +269,7 @@ export const StoryProvider: ParentComponent = (props) => {
       return state.furniture.map((f) => furnitureData[f]).filter((f) => f.type === "stash").reduce<number>((acc, f) => acc + (f.storageSize ?? 0), 0);
     } catch (err) {
       console.error(err);
-      return 1;
+      return 0;
     }
   });
 
@@ -316,9 +316,11 @@ export const StoryProvider: ParentComponent = (props) => {
 
   const onNavigate = (name: string) => {
     if (name === "_start") {
-      const first = navStack().at(0) ?? DEFAULT_STORY;
-      setNavStack([first]);
-      setStory(loadStory(first));
+      name = DEFAULT_STORY;
+    }
+    if (name === DEFAULT_STORY) {
+      setNavStack([DEFAULT_STORY]);
+      setStory(loadStory(DEFAULT_STORY));
       return;
     }
     const isBack = /^_back/.test(name);

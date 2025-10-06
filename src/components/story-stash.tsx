@@ -3,6 +3,7 @@ import { StoryContext } from "../provider/story";
 import { IItem } from "../data/types";
 
 import itemData from "../data/item";
+import {Button} from "./Button";
 
 export const Story_Stash: Component = () => {
   const ctx = useContext(StoryContext);
@@ -65,20 +66,20 @@ export const Story_Stash: Component = () => {
               <div class="font-bold">{selectedItem()?.label} ({selectedItem()?.stack})</div>
             </div>
             <div class="flex flex-col gap-1 justify-between">
-              <div class="px-2 py-1 bg-blue-300 w-full flex flex-col justify-between">
-                <span class="font-bold text-sm text-black">Take</span>
-                <div class="flex flex-row justify-between gap-2 w-full">
-                  <button onClick={() => onStash(1)}>One</button>
-                  <button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</button>
-                  <button onClick={() => onStash(Infinity)}>All</button>
+              <div class="px-2 py-1 bg-blue-300 w-full flex flex-row justify-between items-center mb-2">
+                <span class="font-bold text-xl text-black">Transfer</span>
+                <div class="flex flex-row gap-4">
+                  <Button onClick={() => onStash(1)}>One</Button>
+                  <Button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onStash(Infinity)}>All</Button>
                 </div>
               </div>
-              <div class="px-2 py-1 bg-red-300 w-full flex flex-col justify-between">
-                <span class="font-bold text-sm text-black">Drop</span>
-                <div class="flex flex-row justify-between gap-2 w-full">
-                  <button onClick={() => onRemove(1)}>One</button>
-                  <button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</button>
-                  <button onClick={() => onRemove(Infinity)}>All</button>
+              <div class="px-2 py-1 bg-red-300 w-full flex flex-row justify-between items-center">
+                <span class="font-bold text-xl text-black">Drop</span>
+                <div class="flex flex-row gap-4">
+                  <Button onClick={() => onRemove(1)}>One</Button>
+                  <Button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onRemove(Infinity)}>All</Button>
                 </div>
               </div>
             </div>
