@@ -1,7 +1,8 @@
 import { IStoryContext } from "../../provider/story";
 import { IItemCraftable, IStory } from "../types";
-import { furniture } from "../home";
+
 import itemData from "../item";
+import furnitureData from "../furniture";
 
 const story: IStory[] = [
   {
@@ -30,7 +31,7 @@ const story: IStory[] = [
     description: "A workshop",
     type: "dialogue",
     options: (ctx: IStoryContext) => {
-      return ctx.state.furniture.map((f) => furniture[f]).filter((f) => f.type === "craft")
+      return ctx.state.furniture.map((f) => furnitureData[f]).filter((f) => f.type === "craft")
         .map((f) => ({ label: f.label, goto: `story_craft_${f.cratingType}_1` }))
     }
   },

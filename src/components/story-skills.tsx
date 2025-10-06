@@ -1,23 +1,28 @@
 import { Component, createMemo, createSignal, For, Match, Switch, useContext } from "solid-js";
-import masteryData from "../data/mastery";
 import { StoryContext } from "../provider/story";
 import { MasteryType } from "../data/types";
 import { getLevel, getProgress, masteryXP } from "../utils/levels";
 import { Progress } from "./ticker";
 
+import masteryData from "../data/mastery";
 import itemData from "../data/item";
 
+type views = "skills" | "mastery" | "recipes";
+type masteryDisplay = { label: string, progress: number, level: number, name: MasteryType };
+
 export const Story_Skills: Component = () => {
-  const [view, setView] = createSignal<"skills" | "mastery" | "recipes">("mastery");
+  const [view, setView] = createSignal<views>("mastery");
   const ctx = useContext(StoryContext);
 
-  const mastery = createMemo(() => {
+  const [selected, setSelected] = createSignal<masteryDisplay>();
+
+  const mastery = createMemo<masteryDisplay[]>(() => {
     return Object.entries(ctx?.player.mastery ?? {}).map(
       ([k, v]) => {
         const m = masteryData[k as MasteryType];
-        return { label: m?.label, progress: (getProgress(v, masteryXP) * 100), level: getLevel(v, masteryXP) };
+        return { label: m?.label ?? "", progress: (getProgress(v, masteryXP) * 100), level: getLevel(v, masteryXP), name: k as MasteryType };
       }
-    );
+    ) ?? [];
   });
 
   const recipes = createMemo(() => {
@@ -26,19 +31,61 @@ export const Story_Skills: Component = () => {
     ) ?? [];
   });
 
+  const onChangeView = (name: views) => {
+    setSelected(undefined);
+    setView(name);
+  }
+
+  const masteryDetails = createMemo(() => {
+    const name = selected()?.name;
+    if (name === undefined) {
+      return;
+    }
+    const level = getLevel(ctx?.player.mastery[name] ?? 0, masteryXP);
+    const indexOf = masteryData[name]?.bonus.findLastIndex((b) => b.level <= level);
+    return masteryData[name]?.bonus.slice(0, (indexOf ?? 0)+2).map(
+      (b, idx, arr) => ({
+        level: b.level,
+        stats: Object.entries(b.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join(""),
+        isLast: idx === arr.length - 1
+      })
+    );
+  });
+
   return (
     <div class="flex flex-col h-full">
       <div class="h-7/8 p-2">
         <Switch>
           <Match when={view() === "skills"}>TODO</Match>
-          <Match when={view() === "mastery"}>
+          <Match when={view() === "mastery" && !selected()}>
             <For each={mastery()}>{
               (m) => (
-                <div class="flex flex-row justify-between items-center">
+                <div class="flex flex-row justify-between items-center cursor-pointer" onClick={() => setSelected(m)}>
                   <div>{m.label}</div>
                   <div class="h-4 w-32">
                     <Progress label={`${m.level}`} type="yellow" max={100} value={m.progress} showPc></Progress>
                   </div>
+                </div>
+              )
+            }</For>
+          </Match>
+          <Match when={view() === "mastery" && selected()}>
+            <div class="flex flex-col justify-between items-center cursor-pointer">
+              <div class="text-xl font-bold">{selected()?.label}</div>
+              <div class="h-4 w-32">
+                <Progress label={`${selected()!.level}`} type="yellow" max={100} value={selected()!.progress} showPc></Progress>
+              </div>
+            </div>
+
+            <div class="flex flex-row justify-between items-center font-bold mb-2">
+              <div>Level</div>
+              <div>Stats</div>
+            </div>
+            <For each={masteryDetails()}>{
+              (m) => (
+                <div class="flex flex-row justify-between items-center border-b border-gray-700">
+                  <div>{m.level}</div>
+                  <div class="text-xs">{m.isLast ? "???" : m.stats}</div>
                 </div>
               )
             }</For>
@@ -56,9 +103,9 @@ export const Story_Skills: Component = () => {
         </Switch>
       </div>
       <div class="h-1/8 flex flex-row justify-between gap-2 p-2">
-        <button classList={{ "selected": view() === "skills"}} onClick={() => setView("skills")}>Skills</button>
-        <button classList={{ "selected": view() === "mastery"}} onClick={() => setView("mastery")}>Mastery</button>
-        <button classList={{ "selected": view() === "recipes"}} onClick={() => setView("recipes")}>Recipes</button>
+        <button classList={{ "selected": view() === "skills"}} onClick={() => onChangeView("skills")}>Skills</button>
+        <button classList={{ "selected": view() === "mastery"}} onClick={() => onChangeView("mastery")}>Mastery</button>
+        <button classList={{ "selected": view() === "recipes"}} onClick={() => onChangeView("recipes")}>Recipes</button>
       </div>
     </div>
   );

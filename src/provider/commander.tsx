@@ -61,10 +61,12 @@ export const Commander: ParentComponent = (props) => {
           setPause(false);
         }
       })
+    } else {
+      setPause(false);
     }
   };
 
-  window.addEventListener("load", () => setTimeout(catchUp, 500));
+  window.addEventListener("load", () => setTimeout(catchUp, 200));
   window.addEventListener("beforeunload", () => {
     window.localStorage.setItem("freeze_time", `${Date.now()}`);
   });
