@@ -1,7 +1,6 @@
-import { IStoryContext } from "../../provider/story";
 import { IOption, IStory } from "../types";
 import itemData from "../item";
-import {Speech} from "./format";
+import { Speech } from "./format";
 
 const toolItems: { name: string, cost: number }[] = [
   { name: "utility_axe_1", cost: 100 }
@@ -22,19 +21,19 @@ const town: IStory[] = [
     name: "story_town_merchant_tool_1",
     label: "Tool Merchant",
     description: <>A burly man, skin of leather <Speech lines={[`The very finest tools`]} /></>,
-    options: (ctx: IStoryContext): IOption[] => {
-      const gold = ctx.player.stats.gold;
+    options: (gameCtx, inventCtx, playerCtx): IOption[] => {
+      const gold = playerCtx?.stats.gold;
       return toolItems.map<IOption>(
         (tool) => {
           const item = itemData[tool.name];
           return {
             label: item?.label ?? "UNKNOWN",
-            action: (ctx_1) => {
-              ctx_1.addInventory(item);
-              ctx_1.onAddStat("gold", 0 - tool.cost);
-              ctx_1.onNavigate("story_town_merchant_tool_1");
+            action: () => {
+              inventCtx?.addInventory(item.name, 1);
+              playerCtx?.onAddStat("gold", 0 - tool.cost);
+              gameCtx?.onNavigate("story_town_merchant_tool_1");
             },
-            isDisabled: tool.cost > gold
+            isDisabled: tool.cost > (gold ?? 0)
           };
         }
       );

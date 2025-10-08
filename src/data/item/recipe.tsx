@@ -1,4 +1,3 @@
-import { IStoryContext } from "../../provider/story";
 import { IRecipe } from "../types";
 
 const items: IRecipe[] = [
@@ -26,19 +25,19 @@ const items: IRecipe[] = [
 ].map(
   (item) => ({
     ...item,
-    use: (ctx: IStoryContext) => {
-      ctx.onTask({
+    use: (gameCtx, inventCtx, playerCtx, storyCtx) => {
+      storyCtx?.onTask({
         noRepeat: true,
         label: `Learning`,
         description: item.label,
         duration: 100,
         onComplete: () => {
-          if (!ctx.player.recipes.includes(item.craftableItem)) {
-            ctx.setPlayer("recipes", [...ctx.player.recipes, item.craftableItem]);
-            ctx.setState("prohibitedItems", [...ctx.state.prohibitedItems, item.name]);
+          if (!playerCtx?.recipes()?.find((r) => r.craftableItem === item.craftableItem)) {
+            playerCtx?.onAddRecipe(item.craftableItem);
+            gameCtx?.setState("prohibitedItems", [...(gameCtx?.state.prohibitedItems ?? []), item.name]);
           }
-          ctx.removeInventory(item.name);
-          ctx.onNavigate("_back");
+          inventCtx?.removeInventory(item.name, 1);
+          gameCtx?.onNavigate("_back");
           return true;
         }
       });

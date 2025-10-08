@@ -1,5 +1,8 @@
 import {JSX, JSXElement} from "solid-js";
-import type { IStoryContext } from "../provider/story";
+import {IGameContext} from "../provider/game";
+import {IInventoryContext} from "../provider/inventory";
+import {IPlayerContext} from "../provider/player";
+import {IStoryContext} from "../provider/story";
 
 export interface IEncounter {
     name: string;
@@ -40,7 +43,7 @@ export interface IItemBase {
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
-    use?: (ctx: IStoryContext) => boolean;
+    use?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => boolean;
 }
 
 export interface IItemEquipable extends IItemBase {
@@ -79,7 +82,7 @@ export interface IMastery {
 export type IOption = {
     label: string | JSXElement;
     goto?: string;
-    action?: (ctx: IStoryContext) => void;
+    action?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => void;
     subtext?: string;
     isDisabled?: boolean;
 }
@@ -90,7 +93,7 @@ export interface IStory {
     label: string;
     description: string | JSXElement;
     // dialogue
-    options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
+    options?: IOption[] | ((gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => IOption[]);
     // encounter
     encounters?: IEncounter[];
     cooldown?: number;
@@ -99,7 +102,7 @@ export interface IStory {
     duration?: number;
     noRepeat?: boolean;
     items?: IDrop[];
-    onComplete?: (ctx: IStoryContext) => void;
+    onComplete?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => void;
     masteryType?: MasteryType;
     experience?: number;
     utilityType?: ItemUtilityType;
@@ -132,12 +135,23 @@ export type IPlayerStats = IAttributes & IStats;
 
 export interface IPlayer {
     stats: IPlayerStats;
-    equipment: IItemEquipable[];
+    equipment: string[];
     mastery: { [key in MasteryType]?: number };
     recipes: string[];
 }
 
+export type InventItem = { name: string, count: number } | null;
+
 export interface IGameState {
     prohibitedItems?: string[];
     furniture?: string[];
+    stash?: InventItem[];
+}
+
+export type LogType = "bad" | "good" | "meta" | "drop" | "basic";
+
+export type ILogItem = {
+  time: string;
+  msg: (string | JSXElement);
+  type: LogType;
 }

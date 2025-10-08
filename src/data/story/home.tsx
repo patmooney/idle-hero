@@ -1,8 +1,8 @@
-import { IStoryContext } from "../../provider/story";
 import { IItemCraftable, IStory } from "../types";
 
 import itemData from "../item";
 import furnitureData from "../furniture";
+import { IInventoryContext } from "../../provider/inventory";
 
 const story: IStory[] = [
   {
@@ -30,9 +30,9 @@ const story: IStory[] = [
     label: "Crafting",
     description: "A workshop",
     type: "dialogue",
-    options: (ctx: IStoryContext) => {
-      return ctx.state.furniture.map((f) => furnitureData[f]).filter((f) => f.type === "craft")
-        .map((f) => ({ label: f.label, goto: `story_craft_${f.cratingType}_1` }))
+    options: (ctx) => {
+      return ctx?.state.furniture?.map((f) => furnitureData[f]).filter((f) => f.type === "craft")
+        .map((f) => ({ label: f.label, goto: `story_craft_${f.cratingType}_1` })) ?? []
     }
   },
   {
@@ -40,45 +40,47 @@ const story: IStory[] = [
     label: "Basic crafting",
     description: "A very simple crafting table",
     type: "dialogue",
-    options: (ctx: IStoryContext) => {
-      return ctx.player.recipes.map((r) => itemData[r]).filter((i) => (i as IItemCraftable).craftType === "basic")
+    options: (_, inventCtx, playerCtx, storyCtx) => {
+      if (!playerCtx || !inventCtx) {
+        return [];
+      }
+      return playerCtx?.recipes()?.filter((i) => (i as IItemCraftable).craftType === "basic")
         .map((i) => ({
           label: i.label,
-          action: (ctx: IStoryContext) => {
-            ctx.onTask({
+          action: () => {
+            storyCtx?.onTask({
               noRepeat: true,
               label: `Crafting`,
               description: i.label,
               duration: 100,
-              onComplete: () => craftItem(ctx, i as IItemCraftable)
+              onComplete: () => craftItem(inventCtx!, i as IItemCraftable)
             });
           },
-          isDisabled: !hasIngredients(ctx, i as IItemCraftable),
+          isDisabled: !hasIngredients(inventCtx, i as IItemCraftable),
           subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing[0]].label} (${ing[1]})`).join(" - ")
-        }));
+        })) ?? [];
     }
   }
 ];
 
-const craftItem = (ctx: IStoryContext, item: IItemCraftable) => {
-  // TODO - this should take time like an encounter
-  ctx.addInventory(item);
+const craftItem = (ctx: IInventoryContext, item: IItemCraftable) => {
+  ctx.addInventory(item.name, 1);
   item.ingredients?.forEach(
     (ing) => ctx.removeInventory(...ing)
   );
 };
 
-const hasIngredients = (ctx: IStoryContext, item: IItemCraftable) => {
+const hasIngredients = (ctx: IInventoryContext | undefined, item: IItemCraftable) => {
   if (!item.ingredients?.length) {
     return true;
   }
   return item.ingredients.every((ing) => {
-    const count = ctx.player.invent.reduce<number>((acc, inv) => {
+    const count = ctx?.inventory().reduce<number>((acc, inv) => {
       if (inv?.name === ing[0]) {
-        acc = acc + (inv.stack ?? 1)
+        acc = acc + (inv.count ?? 1)
       }
       return acc;
-    }, 0);
+    }, 0) ?? 0;
     return count >= ing[1];
   });
 };

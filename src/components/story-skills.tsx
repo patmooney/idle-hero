@@ -1,33 +1,26 @@
 import { Component, createMemo, createSignal, For, Match, Switch, useContext } from "solid-js";
-import { StoryContext } from "../provider/story";
 import { MasteryType } from "../data/types";
 import { getLevel, getProgress, masteryXP } from "../utils/levels";
 import { Progress } from "./ticker";
 
 import masteryData from "../data/mastery";
-import itemData from "../data/item";
+import { PlayerContext } from "../provider/player";
 
 type views = "skills" | "mastery" | "recipes";
 type masteryDisplay = { label: string, progress: number, level: number, name: MasteryType };
 
 export const Story_Skills: Component = () => {
   const [view, setView] = createSignal<views>("mastery");
-  const ctx = useContext(StoryContext);
+  const player = useContext(PlayerContext);
 
   const [selected, setSelected] = createSignal<masteryDisplay>();
 
   const mastery = createMemo<masteryDisplay[]>(() => {
-    return Object.entries(ctx?.player.mastery ?? {}).map(
+    return Object.entries(player?.mastery ?? {}).map(
       ([k, v]) => {
         const m = masteryData[k as MasteryType];
         return { label: m?.label ?? "", progress: (getProgress(v, masteryXP) * 100), level: getLevel(v, masteryXP), name: k as MasteryType };
       }
-    ) ?? [];
-  });
-
-  const recipes = createMemo(() => {
-    return ctx?.player.recipes.map(
-      (recipe) => itemData[recipe]
     ) ?? [];
   });
 
@@ -41,7 +34,7 @@ export const Story_Skills: Component = () => {
     if (name === undefined) {
       return;
     }
-    const level = getLevel(ctx?.player.mastery[name] ?? 0, masteryXP);
+    const level = getLevel(player?.mastery[name] ?? 0, masteryXP);
     const indexOf = masteryData[name]?.bonus.findLastIndex((b) => b.level <= level);
     return masteryData[name]?.bonus.slice(0, (indexOf ?? 0)+2).map(
       (b, idx, arr) => ({
@@ -91,7 +84,7 @@ export const Story_Skills: Component = () => {
             }</For>
           </Match>
           <Match when={view() === "recipes"}>
-            <For each={recipes()}>{
+            <For each={player?.recipes()}>{
               (m) => (
                 <div class="flex flex-row justify-between items-center">
                   <div>{m.label}</div>

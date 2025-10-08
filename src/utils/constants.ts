@@ -7,3 +7,5 @@ export const MIN_TICK_TIME_MS = 100;
 export const MAX_MASTERY = 500;
 export const MAX_CATCHUP_MS = 12 * 60 * 60 * 1000;
 export const MIN_STASH = 5;
+export const TICKS_IN_YEAR = (60 * 60 * 24 * 10) / 85;
+export const DEFAULT_STORY = "story_town_1";

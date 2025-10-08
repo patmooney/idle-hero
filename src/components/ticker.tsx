@@ -1,10 +1,19 @@
 import { Component, createMemo, createSignal, Match, onCleanup, onMount, Switch, useContext } from "solid-js";
-import { CommandContext, TickEvent } from "../provider/commander";
+import { GameContext } from "../provider/game";
 
 export type TickerType = "green" | "yellow" | "blue" | "red";
 
-export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: TickerType, showPc?: boolean, showNumber?: boolean, label?: string, isSmall?: boolean }> = (props) => {
-  const commander = useContext(CommandContext)
+export const Ticker: Component<{
+  name: string,
+  ticks: number,
+  onFinish: () => void,
+  type?: TickerType,
+  showPc?: boolean,
+  showNumber?: boolean,
+  label?: string,
+  isSmall?: boolean
+}> = (props) => {
+  const ctx = useContext(GameContext)
   const [remaining, setRemaining] = createSignal<number>(props.ticks);
 
   const cb = () => {
@@ -15,8 +24,8 @@ export const Ticker: Component<{ ticks: number, onFinish: () => void, type?: Tic
     }
     setRemaining(r - 1);
   };
-  onMount(() => commander?.evt.addEventListener(TickEvent.type, cb));
-  onCleanup(() => commander?.evt.removeEventListener(TickEvent.type, cb));
+  onMount(() => ctx?.startActivity(props.name, cb));
+  onCleanup(() => ctx?.endActivity(props.name));
 
   return <Progress max={props.ticks} value={props.ticks - remaining()} type={props.type} showPc={props.showPc} showNumber={props.showNumber} label={props.label} />
 }
@@ -48,5 +57,4 @@ export const Progress: Component<{ max: number, value: number, type?: TickerType
       </div>
     </div>
   );
-
 }

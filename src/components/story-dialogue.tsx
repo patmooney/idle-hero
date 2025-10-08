@@ -1,23 +1,34 @@
 import { Component, createMemo, For, Show, useContext } from "solid-js";
-import { DEFAULT_STORY, StoryContext } from "../provider/story";
+import { StoryContext } from "../provider/story";
 import { IOption } from "../data/types";
+import { DEFAULT_STORY } from "../utils/constants";
+import { GameContext } from "../provider/game";
+import { PlayerContext } from "../provider/player";
+import { InventoryContext } from "../provider/inventory";
 
 export const Story_Dialogue: Component = () => {
-  const ctx = useContext(StoryContext);
+  const gameCtx = useContext(GameContext);
+  const inventCtx = useContext(InventoryContext);
+  const playerCtx = useContext(PlayerContext);
+  const storyCtx = useContext(StoryContext);
+
   const onClick = (option: IOption) => {
     if (option.goto) {
-      return ctx?.onNavigate(option.goto);
+      return gameCtx?.onNavigate(option.goto);
     }
-    if (option.action && ctx) {
-      return option.action(ctx);
+    if (option.action && gameCtx && inventCtx && playerCtx && storyCtx) {
+      return option.action(gameCtx, inventCtx, playerCtx, storyCtx);
     }
   }
   const options = createMemo(() => {
-    const opts = ctx?.story().options;
+    const opts = storyCtx?.story()?.options;
     if (Array.isArray(opts)) {
       return opts;
     }
-    return opts?.(ctx!) ?? [];
+    if (gameCtx && inventCtx && playerCtx && storyCtx) {
+      return opts?.(gameCtx, inventCtx, playerCtx, storyCtx) ?? [];
+    }
+    return [];
   });
   return (
     <div class="flex flex-col gap-5 p-2 h-full overflow-y-auto">
@@ -38,7 +49,7 @@ export const Story_Dialogue: Component = () => {
           </div>
         }</For>
       </Show>
-      <Show when={ctx?.story()?.name !== DEFAULT_STORY}>
+      <Show when={storyCtx?.story()?.name !== DEFAULT_STORY}>
         <div class="flex flex-row mt-auto gap-2">
           <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => onClick({ label: "Go back", goto: "_back" })}>
             Go back
