@@ -27,6 +27,7 @@ const App = () => (
 
 const Story = () => {
   const [view, setView] = createSignal<ContextScreen>("story");
+  const gctx = useContext(GameContext);
   const ctx = useContext(StoryContext);
 
   const currentView = createMemo<ContextScreen>(() => {
@@ -37,6 +38,7 @@ const Story = () => {
   });
   return (
     <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
+      {ctx?.story()?.name} - {gctx?.nav().at(-1)}
       <div class="h-3/10 bg-gray-400">
         <div class="h-1/10">
           <Overview />

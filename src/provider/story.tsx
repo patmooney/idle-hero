@@ -97,6 +97,7 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
 
   const onTask = (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => {
     game?.setNav([...(game?.nav() ?? []), "task"]);
+    props.setStory("task");
     setStory(
       {
         name: "task",

@@ -25,6 +25,7 @@ const items: IRecipe[] = [
 ].map(
   (item) => ({
     ...item,
+    useVerb: "Read",
     use: (gameCtx, inventCtx, playerCtx, storyCtx) => {
       storyCtx?.onTask({
         noRepeat: true,
@@ -32,11 +33,13 @@ const items: IRecipe[] = [
         description: item.label,
         duration: 100,
         onComplete: () => {
+          console.log("COMPLETED");
           if (!playerCtx?.recipes()?.find((r) => r.craftableItem === item.craftableItem)) {
             playerCtx?.onAddRecipe(item.craftableItem);
             gameCtx?.setState("prohibitedItems", [...(gameCtx?.state.prohibitedItems ?? []), item.name]);
           }
           inventCtx?.removeInventory(item.name, 1);
+          console.log("NAV BACK");
           gameCtx?.onNavigate("_back");
           return true;
         }

@@ -106,7 +106,7 @@ export const Story_Invent: Component = () => {
             <div class="flex flex-col gap-1 justify-between">
               <div class="w-full flex flex-row justify-between gp-2 mb-2">
                 <Show when={selectedItem()?.item.use}>
-                  <button class="m-auto" onClick={onUse}>use</button>
+                  <button class="m-auto" onClick={onUse}>{selectedItem()?.item.useVerb ?? "Use"} </button>
                 </Show>
                 <Show when={(selectedItem()?.item as IItemEquipable).equipSlot}>
                   <button class="m-auto" onClick={onEquip}>equip</button>

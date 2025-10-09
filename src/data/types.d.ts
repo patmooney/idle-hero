@@ -43,6 +43,7 @@ export interface IItemBase {
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
+    useVerb?: string;
     use?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => boolean;
 }
 
