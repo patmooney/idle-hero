@@ -1,14 +1,23 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
+import { IItemEquipable, InventItem } from "../data/types";
+import { Button} from "./Button";
+import { InventoryContext } from "../provider/inventory";
+import { PlayerContext } from "../provider/player";
+import { GameContext } from "../provider/game";
 import { StoryContext } from "../provider/story";
-import { IItem, IItemEquipable } from "../data/types";
-import {Button} from "./Button";
+
+import itemData from "../data/item";
 
 export const Story_Invent: Component = () => {
-  const ctx = useContext(StoryContext);
+  const gameCtx = useContext(GameContext);
+  const inventCtx = useContext(InventoryContext);
+  const playerCtx = useContext(PlayerContext);
+  const storyCtx = useContext(StoryContext);
+
   const [selected, setSelected] = createSignal<number>();
 
   const onSelect = (idx: number) => {
-    if (idx < 0 || !ctx?.player.invent[idx]) {
+    if (idx < 0 || !inventCtx?.inventory().at(idx)) {
       return;
     }
     setSelected(idx);
@@ -19,25 +28,31 @@ export const Story_Invent: Component = () => {
     if (idx < 0) {
       return;
     }
-    return ctx?.player.invent.at(idx);
+    const item = inventCtx?.inventory().at(idx);
+    return item ? { item: itemData[item.name], count: item.count } : null;
   });
 
   const onUse = () => {
     const item = selectedItem();
-    if (!item || !ctx) {
+    if (!item) {
       return;
     }
-    if (item?.use?.(ctx)) {
+    if (!gameCtx || !inventCtx || !playerCtx || !storyCtx) {
+      return;
+    }
+    if (item.item.use?.(gameCtx, inventCtx, playerCtx, storyCtx)) {
       setSelected(undefined);
     }
   };
 
   const onEquip = () => {
-    const item = selectedItem();
-    if (!(item as IItemEquipable)?.equipSlot || !ctx) {
+    const i = selectedItem();
+    const item = i ? i.item as IItemEquipable : null;
+    if (!(item as IItemEquipable)?.equipSlot) {
       return;
     }
-    if (ctx.onEquip(item as IItemEquipable)) {
+    if (playerCtx?.onEquip(item as IItemEquipable)) {
+      inventCtx?.removeInventory(item!.name, 1);
       setSelected(undefined);
     }
   };
@@ -47,8 +62,8 @@ export const Story_Invent: Component = () => {
     if (!item) {
       return;
     }
-    ctx?.removeInventory(item, count);
-    if (count >= (item.stack ?? 1)) {
+    inventCtx?.removeInventory(item.item.name, count);
+    if (count >= (item.count ?? 1)) {
       setSelected(undefined);
     }
   };
@@ -59,25 +74,21 @@ export const Story_Invent: Component = () => {
       return;
     }
     count = count === Infinity
-      ? ctx?.player.invent.reduce<number>((acc, i) => i?.name === item.name ? acc + (i!.stack ?? 0) : acc, 0) ?? 0
+      ? inventCtx?.inventory().reduce<number>((acc, i) => i?.name === item.item.name ? acc + (i!.count ?? 0) : acc, 0) ?? 0
       : count;
 
-    console.log({ item, count });
-
     if (item) {
-      const added = ctx?.addStash(item, count);
-      console.log(added);
-      ctx?.removeInventory(item, added)
+      inventCtx?.addStash(item.item.name, count);
     };
   };
   const isInStash = createMemo(() => {
-    return ctx?.navStack().includes("story_home_1");
+    return gameCtx?.nav().includes("story_home_1");
   });
 
   return (
     <div class="h-full relative">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
-        <For each={ctx?.player.invent ?? []}>{
+        <For each={inventCtx?.inventory() ?? []}>{
           (item, idx) => <InventorySlot item={item} onSelect={() => onSelect(idx())} />
         }</For>
       </div>
@@ -86,19 +97,19 @@ export const Story_Invent: Component = () => {
           <div class="flex flex-col gap-2">
             <div class="flex flex-row justify-center relative">
               <span class="absolute left-0 top-0 font-bold cursor-pointer border-2 rounded-xl px-2 hover:bg-white hover:text-black" onClick={() => setSelected(undefined)}>X</span>
-              <div class="font-bold">{selectedItem()?.label} ({selectedItem()?.stack})</div>
+              <div class="font-bold">{selectedItem()?.item.label} ({selectedItem()?.count})</div>
             </div>
-            <Show when={selectedItem()!.stats}>
+            <Show when={selectedItem()!.item.stats}>
               <div class="text-sm">{
-                Object.entries(selectedItem()!.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join("")
+                Object.entries(selectedItem()!.item.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join("")
               }</div>
             </Show>
             <div class="flex flex-col gap-1 justify-between">
               <div class="w-full flex flex-row justify-between gp-2 mb-2">
-                <Show when={selectedItem()?.use}>
-                  <button class="m-auto" onClick={onUse}>use</button>
+                <Show when={selectedItem()?.item.use}>
+                  <button class="m-auto" onClick={onUse}>{selectedItem()?.item.useVerb ?? "Use"} </button>
                 </Show>
-                <Show when={(selectedItem() as IItemEquipable).equipSlot}>
+                <Show when={(selectedItem()?.item as IItemEquipable).equipSlot}>
                   <button class="m-auto" onClick={onEquip}>equip</button>
                 </Show>
               </div>
@@ -107,7 +118,7 @@ export const Story_Invent: Component = () => {
                   <span class="font-bold text-xl text-black">Stash</span>
                   <div class="flex flex-row gap-4">
                     <Button onClick={() => onStash(1)}>One</Button>
-                    <Button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</Button>
+                    <Button onClick={() => onStash(selectedItem()?.count ?? 1)}>Stack</Button>
                     <Button onClick={() => onStash(Infinity)}>All</Button>
                   </div>
                 </div>
@@ -116,7 +127,7 @@ export const Story_Invent: Component = () => {
                 <span class="font-bold text-xl text-black">Drop</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onRemove(1)}>One</Button>
-                  <Button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
                   <Button onClick={() => onRemove(Infinity)}>All</Button>
                 </div>
               </div>
@@ -129,22 +140,29 @@ export const Story_Invent: Component = () => {
 }
 
 interface IInventorySlotProps {
-  item: (IItem & { stack?: number }) | null,
+  item: InventItem | null,
   onSelect: () => void;
 }
 
-const InventorySlot: Component<IInventorySlotProps> = (props) => {
+export const InventorySlot: Component<IInventorySlotProps> = (props) => {
   const onClick = (e: MouseEvent) => {
     e.stopPropagation();
     props.onSelect();
   };
+  const label = createMemo(() => {
+    if (!props.item) {
+      return null;
+    }
+    return itemData[props.item.name].label;
+  });
+
   return (
     <Show when={props.item} fallback={
       <div class="border p-1 flex flex-row justify-between border-gray-700 text-gray-700">Empty</div>
     }>
       <div class="border p-1 cursor-pointer flex flex-row justify-between" onClick={onClick}>
-        <div>{props.item?.label}</div>
-        <div>({props.item?.stack})</div>
+        <div>{label()}</div>
+        <div>({props.item?.count})</div>
       </div>
     </Show>
   );

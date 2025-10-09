@@ -1,5 +1,5 @@
 import { IStory } from "../types";
-import {Speech} from "./format";
+import { Speech } from "./format";
 
 const story: IStory[] = [
   {
@@ -24,16 +24,18 @@ const story: IStory[] = [
       { label: <span class="text-red-500">Fight scarecrows</span>, goto: "story_scarecrows_1" },
       {
         label: "Sell Hay",
-        action: (ctx) => {
-          const invent = ctx.player.invent;
-          const { removeInventory, onAddStat } = ctx;
-          const count = invent.filter((inv) => inv?.name === "hay_1").reduce<number>((acc, inv) => acc + (inv?.stack ?? 0), 0);
+        action: (gameCtx, inventCtx, playerCtx) => {
+          if (!inventCtx) {
+            return;
+          }
+          const invent = inventCtx.inventory();
+          const count = invent.filter((inv) => inv?.name === "hay_1").reduce<number>((acc, inv) => acc + (inv?.count ?? 0), 0);
           if (!count) {
             return;
           }
-          removeInventory("hay_1", count);
-          onAddStat("gold", count);
-          ctx.onLog(
+          inventCtx.removeInventory("hay_1", count);
+          playerCtx?.onAddStat("gold", count);
+          gameCtx?.onLog(
             <>
               You sell<span class="font-bold ml-1">{/*@once*/count}</span> <span class="font-bold text-blue-500 mr-1">Hay</span>
               For <span class="font-bold">{/*@once*/count}</span> gold
@@ -78,12 +80,12 @@ const story: IStory[] = [
       {
         name: "enc_scarecrow_1",
         label: "Scarecrow",
-        health: 10,
+        health: 1,
         chance: 1,
         experience: 50,
         drops: [
           { name: "hay_1", chance: 1 },
-          { name: "recipe_hay_hand_1", chance: 0.05 },
+          { name: "recipe_hay_hand_1", chance: 1 },
           { name: "recipe_hay_head_1", chance: 0.05 },
           { name: "recipe_hay_chest_1", chance: 0.05 },
         ]

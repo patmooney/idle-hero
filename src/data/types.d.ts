@@ -1,5 +1,8 @@
-import {JSX, JSXElement} from "solid-js";
-import type { IStoryContext } from "../provider/story";
+import { JSX, JSXElement } from "solid-js";
+import { IGameContext } from "../provider/game";
+import { IInventoryContext } from "../provider/inventory";
+import { IPlayerContext } from "../provider/player";
+import { IStoryContext } from "../provider/story";
 
 export interface IEncounter {
     name: string;
@@ -18,7 +21,8 @@ export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "fo
 export type CraftingType = "basic" | "weapon" | "armour";
 
 export type LearnType = "recipe" | "skill";
-
+export type ItemCount = { name: string, count: number };
+export type InventItem = ItemCount | null;
 export type FurnitureType = "stash" | "craft";
 
 export interface IFurniture {
@@ -28,10 +32,11 @@ export interface IFurniture {
     storageSize?: number;
     cratingType?: CraftingType;
     craftingComplexity?: number;
+    ingredients?: ItemCount[];
 }
 
 export type IItem = IItemBase | IItemEquipable | IItemCraftable;
-export type IRecipe = IItem & { craftableItem: string };
+export type IRecipe = IItem & { craftableItem?: string, craftableFurniture?: string };
 
 export interface IItemBase {
     name: string;
@@ -40,7 +45,8 @@ export interface IItemBase {
     exclusive?: boolean; // can only hold 1
     stackable?: boolean;
     maxStack?: number;
-    use?: (ctx: IStoryContext) => boolean;
+    useVerb?: string;
+    use?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => boolean;
 }
 
 export interface IItemEquipable extends IItemBase {
@@ -54,7 +60,7 @@ export interface IItemCraftable extends IItemBase {
     craftType: CraftingType;
     craftComplexity: number;
     craftLevel: number;
-    ingredients?: [string, number][];
+    ingredients?: ItemCount[];
 }
 
 export interface ISkill {}
@@ -79,7 +85,7 @@ export interface IMastery {
 export type IOption = {
     label: string | JSXElement;
     goto?: string;
-    action?: (ctx: IStoryContext) => void;
+    action?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => void;
     subtext?: string;
     isDisabled?: boolean;
 }
@@ -90,7 +96,7 @@ export interface IStory {
     label: string;
     description: string | JSXElement;
     // dialogue
-    options?: IOption[] | ((ctx: IStoryContext) => IOption[]);
+    options?: IOption[] | ((gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => IOption[]);
     // encounter
     encounters?: IEncounter[];
     cooldown?: number;
@@ -99,7 +105,7 @@ export interface IStory {
     duration?: number;
     noRepeat?: boolean;
     items?: IDrop[];
-    onComplete?: (ctx: IStoryContext) => void;
+    onComplete?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => void;
     masteryType?: MasteryType;
     experience?: number;
     utilityType?: ItemUtilityType;
@@ -132,12 +138,22 @@ export type IPlayerStats = IAttributes & IStats;
 
 export interface IPlayer {
     stats: IPlayerStats;
-    equipment: IItemEquipable[];
+    equipment: string[];
     mastery: { [key in MasteryType]?: number };
     recipes: string[];
 }
 
 export interface IGameState {
-    prohibitedItems?: string[];
-    furniture?: string[];
+    prohibitedItems: string[];
+    furniture: string[];
+    inventory: InventItem[];
+    stash: InventItem[];
+}
+
+export type LogType = "bad" | "good" | "meta" | "drop" | "basic";
+
+export type ILogItem = {
+  time: string;
+  msg: (string | JSXElement);
+  type: LogType;
 }

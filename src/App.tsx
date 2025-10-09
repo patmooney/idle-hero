@@ -5,8 +5,7 @@ import { createStore } from 'solid-js/store';
 
 import { getLevel, getProgress } from './utils/levels';
 
-import { Commander } from './provider/commander'
-import { LogType, StoryContext, StoryProvider } from './provider/story';
+import { LogType } from './data/types';
 
 import { Story_Dialogue } from './components/story-dialogue';
 import { Story_Invent } from './components/story-invent';
@@ -15,34 +14,27 @@ import { Action_Encounter } from './components/action-encounter';
 import { Action_Task } from './components/action-task';
 import { Story_Stats } from "./components/story-stats";
 import { Story_Stash } from './components/story-stash';
-import {Story_Menu} from './components/story-menu';
+import { Story_Menu } from './components/story-menu';
+import { Game, GameContext } from "./provider/game";
+import { StoryContext } from './provider/story';
+import { PlayerContext } from './provider/player';
 
 type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu" | "stash";
 
-function App() {
-
-  return (
-    <>
-      <StoryProvider>
-        <Commander>
-          <Story />
-        </Commander>
-      </StoryProvider>
-    </>
-  );
-}
+const App = () => (
+  <Game><Story /></Game>
+);
 
 const Story = () => {
   const [view, setView] = createSignal<ContextScreen>("story");
   const ctx = useContext(StoryContext);
 
   const currentView = createMemo<ContextScreen>(() => {
-    if (view() === "story" && ctx?.story().name === "story_stash_1") {
+    if (view() === "story" && ctx?.story()?.name === "story_stash_1") {
       return "stash";
     }
     return view();
   });
-
   return (
     <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
       <div class="h-3/10 bg-gray-400">
@@ -100,16 +92,16 @@ export const ActionView: Component = () => {
 
   return (
     <Switch>
-      <Match when={ctx?.story().type === "dialogue"}>
+      <Match when={ctx?.story()?.type === "dialogue"}>
         <div class="flex flex-col gap-2 p-1 h-full">
-          <div class="bg-black text-left pl-1">{ctx?.story().label ?? "Story"}</div>
-          <div class="text-black whitespace-pre-wrap text-left overflow-y-auto text-sm">{ctx?.story().description}</div>
+          <div class="bg-black text-left pl-1">{ctx?.story()?.label ?? "Story"}</div>
+          <div class="text-black whitespace-pre-wrap text-left overflow-y-auto text-sm">{ctx?.story()?.description}</div>
         </div>
       </Match>
-      <Match when={ctx?.story().type === "encounter"}>
+      <Match when={ctx?.story()?.type === "encounter"}>
         <Action_Encounter />
       </Match>
-      <Match when={ctx?.story().type === "task"}>
+      <Match when={ctx?.story()?.type === "task"}>
         <Action_Task />
       </Match>
     </Switch>
@@ -118,7 +110,7 @@ export const ActionView: Component = () => {
 
 export const Log: Component = () => {
   const [logRef, setLogRef] = createSignal<HTMLDivElement>();
-  const { log } = useContext(StoryContext) ?? {};
+  const game = useContext(GameContext);
 
   const [show, setShow] = createStore<Record<LogType, boolean>>({
     good: true,
@@ -135,7 +127,7 @@ export const Log: Component = () => {
     }
     const isBot = (c.scrollTop + c.clientHeight) > c.scrollHeight - 10;
     setTimeout(() => isBot && c.scrollTo(0, c.scrollHeight ?? 0))
-    return log?.().filter((item) => show[item.type]);
+    return game?.log().filter((item) => show[item.type]);
   });
 
   return (
@@ -195,12 +187,15 @@ export const Log: Component = () => {
 };
 
 const Overview: Component = () => {
-  const ctx = useContext(StoryContext);
+  const playerCtx = useContext(PlayerContext);
+  const game = useContext(GameContext);
+
   return (
     <div class="flex flex-row bg-black px-1 justify-between">
-      <div class="text-red-500">HP {ctx?.player.stats.health}/{ctx?.player.stats.maxHealth}</div>
-      <div class="text-yellow-500">Gold {ctx?.player.stats.gold}</div>
-      <div class="text-green-500">Lvl {getLevel(ctx?.player.stats.experience ?? 0)} ({(getProgress(ctx?.player.stats.experience ?? 0) * 100).toFixed(0)}%)</div>
+      <div class="text-red-500">HP {playerCtx?.player.stats.health}/{playerCtx?.player.stats.maxHealth}</div>
+      <div class="text-yellow-500">Gold {playerCtx?.player.stats.gold}</div>
+      <div class="text-white">Age {game?.year()}</div>
+      <div class="text-green-500">Lvl {getLevel(playerCtx?.player.stats.experience ?? 0)} ({(getProgress(playerCtx?.player.stats.experience ?? 0) * 100).toFixed(0)}%)</div>
     </div>
   );
 };

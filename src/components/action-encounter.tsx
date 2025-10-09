@@ -2,25 +2,36 @@ import { Component, createEffect, createSignal, onCleanup, onMount, Show, useCon
 import { Progress, Ticker } from "./ticker";
 import { StoryContext } from "../provider/story";
 import { IEncounter } from "../data/types";
-import { CommandContext, TickEvent } from "../provider/commander";
+import { GameContext } from "../provider/game";
+import { PlayerContext } from "../provider/player";
+import { InventoryContext } from "../provider/inventory";
+
+import itemData from "../data/item";
 
 export const Action_Encounter: Component = () => {
-  const ctx = useContext(StoryContext);
-  const commander = useContext(CommandContext);
+  const ctx = useContext(GameContext);
+  const storyCtx = useContext(StoryContext);
+  const playerCtx = useContext(PlayerContext);
+  const inventCtx = useContext(InventoryContext);
 
+  const [name, setName] = createSignal<string>();
   const [attackRate, setAttackRate] = createSignal<number>(25);
   const [wait, setWait] = createSignal<number>(0);
   const [count, setCount] = createSignal<number>(0);
   const [health, setHealth] = createSignal<number>();
   const [encounter, setEncounter] = createSignal<IEncounter>();
 
-  createEffect(() => {
-    if (commander?.pause()) {
-        commander?.evt.addEventListener(TickEvent.type, onSyncAttack);
-    } else {
-        commander?.evt.removeEventListener(TickEvent.type, onSyncAttack);
+  createEffect((started: boolean) => {
+    if (storyCtx?.story()?.name && ctx?.pause() && !started) {
+      setName(storyCtx?.story()?.name);
+      ctx?.startActivity(`${name()}_catchup`, onSyncAttack);
+      return !started;
+    } else if (!ctx?.pause() && started) {
+      ctx?.endActivity(`${name()}_catchup`);
+      return !started;
     }
-  });
+    return started;
+  }, false);
 
   const onSyncAttack = () => {
     if (attackRate() <= 0 && encounter()) {
@@ -31,14 +42,15 @@ export const Action_Encounter: Component = () => {
   };
 
   onMount(() => {
-    setAttackRate(ctx?.player.attackRate() ?? 25);
-    setEncounter(ctx?.story().getEncounter());
+    setName(storyCtx?.story()?.name);
+    setAttackRate(playerCtx?.attackRate() ?? 25);
+    setEncounter(storyCtx?.getEncounter());
     setHealth(encounter()?.health);
   });
 
   const onFinish = () => {
-    const shouldLog = !commander?.pause();
-    const [ player, story ] = [ctx?.player, ctx?.story()];
+    const shouldLog = !ctx?.pause();
+    const [ player, story ] = [playerCtx, storyCtx?.story()];
     const enc = encounter();
     const h = health();
 
@@ -46,15 +58,15 @@ export const Action_Encounter: Component = () => {
       return;
     }
 
-    setAttackRate(ctx?.player.attackRate() ?? 25);
+    setAttackRate(playerCtx?.attackRate() ?? 25);
 
     if (!enc && story.limit && count() >= story.limit) {
-      story.onComplete?.();
+      story.onComplete?.(ctx!, inventCtx!, playerCtx!, storyCtx!);
       return;
     }
 
     if (!enc) {
-      setEncounter(ctx?.story().getEncounter());
+      setEncounter(storyCtx?.getEncounter());
       setHealth(encounter()?.health);
       return;
     }
@@ -63,7 +75,7 @@ export const Action_Encounter: Component = () => {
       return;
     }
 
-    const [min, max] = ctx?.player.attackDamage() ?? [0, 1];
+    const [min, max] = playerCtx?.attackDamage() ?? [0, 1];
     const damage = min + Math.round(Math.random() * (max - min));
     const newHealth = h - Math.min(damage, h);
 
@@ -75,7 +87,7 @@ export const Action_Encounter: Component = () => {
       );
     }
 
-    ctx?.onAddMastery(ctx.player.weaponMastery(), damage);
+    playerCtx?.onAddMastery(playerCtx?.weaponMastery(), damage);
 
     if (newHealth <= 0) {
       if (shouldLog) {
@@ -89,16 +101,16 @@ export const Action_Encounter: Component = () => {
       setCount(count() + 1);
       setEncounter(undefined);
       if (enc.experience) {
-        ctx?.onAddStat("experience", enc.experience);
+        playerCtx?.onAddStat("experience", enc.experience);
       }
-      const drops = story.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems.includes(drop.name)).filter(
-        (drop) => !!ctx?.addInventory(drop)
+      const drops = storyCtx?.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems?.includes(drop)).filter(
+        (drop) => !!inventCtx?.addInventory(drop)
       );
       if (drops?.length && shouldLog) {
         ctx?.onLog(
           <>
             It dropped:
-            <span class="font-bold m-1">{/*@once*/drops?.map((d) => d.label).join(", ")}</span>
+            <span class="font-bold m-1">{/*@once*/drops?.map((d) => itemData[d]?.label).join(", ")}</span>
           </>, "drop"
         );
       }
@@ -106,15 +118,15 @@ export const Action_Encounter: Component = () => {
         return;
       }
       setWait(story.cooldown ?? 0);
-      commander?.evt.addEventListener(TickEvent.type, doWait);
+      ctx?.startActivity(`${name()}_wait`, doWait);
     }
 
     setHealth(Math.max(newHealth, 0));
   };
 
   const onEnemyAttack = () => {
-    const shouldLog = !commander?.pause();
-    const [ player, story ] = [ctx?.player, ctx?.story()];
+    const shouldLog = !ctx?.pause();
+    const [ player, story ] = [playerCtx?.player, storyCtx?.story()];
     if (!player || !story) {
       return;
     }
@@ -135,37 +147,37 @@ export const Action_Encounter: Component = () => {
       ctx?.onNavigate("_start");
       return;
     }
-    ctx?.onAddStat("health", -damage);
+    playerCtx?.onAddStat("health", -damage);
   }
 
   const doWait = () => {
     if (wait() <= 0) {
-      commander?.evt.removeEventListener(TickEvent.type, doWait);
+      ctx?.endActivity(`${name()}_wait`);
       return onFinish();
     }
     setWait(wait() - 1);
   };
 
   onCleanup(() => {
-    commander?.evt.removeEventListener(TickEvent.type, doWait);
+    ctx?.endActivity(`${name()}_wait`);
   });
 
   return (
-    <Show when={!commander?.pause()}>
+    <Show when={!ctx?.pause()}>
       <div class="flex flex-col gap-1 p-1 h-full">
         <div class="bg-black">
-          Attacking ({count()}<Show when={ctx?.story().limit}> / {ctx?.story().limit}</Show>)
+          Attacking ({count()}<Show when={storyCtx?.story()?.limit}> / {storyCtx?.story()?.limit}</Show>)
         </div>
-        <Show when={!encounter() && ctx?.story().limit && count() >= (ctx.story()?.limit ?? 0)}>
+        <Show when={!encounter() && storyCtx?.story()?.limit && count() >= (storyCtx?.story()?.limit ?? 0)}>
           There is nothing left here to destroy
         </Show>
         <Show when={encounter()} fallback={"Waiting.. Searching.. Wondering.."}>
           <div class="text-red-800">{encounter()?.label}</div>
 
           <div class="h-8">
-            <Progress type="red" max={ctx?.player.stats.maxHealth ?? 10} value={ctx?.player.stats.health ?? 0} label="You" showNumber></Progress>
+            <Progress type="red" max={playerCtx?.player.stats.maxHealth ?? 10} value={playerCtx?.player.stats.health ?? 0} label="You" showNumber></Progress>
             <div class="h-2">
-              <Ticker ticks={attackRate()} onFinish={onFinish} type="yellow" isSmall />
+              <Ticker name={`${name()}_att`} ticks={attackRate()} onFinish={onFinish} type="yellow" isSmall />
             </div>
           </div>
 
@@ -173,7 +185,7 @@ export const Action_Encounter: Component = () => {
             <Progress type="red" max={encounter()!.health} value={health()!} label={encounter()?.label} showNumber></Progress>
             <Show when={encounter()?.stats?.attSpeed}>
               <div class="h-2">
-                <Ticker ticks={encounter()!.stats!.attSpeed!} onFinish={onEnemyAttack} type="yellow" isSmall />
+                <Ticker name={`${name()}_enc`} ticks={encounter()!.stats!.attSpeed!} onFinish={onEnemyAttack} type="yellow" isSmall />
               </div>
             </Show>
           </div>

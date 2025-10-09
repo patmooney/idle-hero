@@ -6,13 +6,15 @@ const basic: IFurniture[] = [
     label: "Basic bench",
     type: "craft",
     craftingComplexity: 1,
-    cratingType: "basic"
+    cratingType: "basic",
+    ingredients: [{ name: "wood_log_1", count: 1 }]
   },
   {
     name: "furniture_stash_1",
     label: "Basic stash",
     type: "stash",
-    storageSize: 5
+    storageSize: 5,
+    ingredients: [{ name: "wood_log_1", count: 20 }, { name: "hay_1", count: 50 }]
   },
 ];
 

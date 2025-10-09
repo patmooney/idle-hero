@@ -1,4 +1,3 @@
-import { IStoryContext } from "../../provider/story";
 import { IOption, IStory } from "../types";
 
 const forest: IStory[] = [
@@ -7,8 +6,8 @@ const forest: IStory[] = [
     name: "story_forest_1",
     label: "Forest border",
     description: "The canopy casts a shadow. Sounds, eyes ... movement",
-    options: (ctx: IStoryContext): IOption[] => {
-      const hasAxe = !!ctx.player.equipment.find((eq) => eq.equipSlot === "weapon" && eq.utilityType === "axe");
+    options: (_, _1, playerCtx): IOption[] => {
+      const hasAxe = !!playerCtx?.equipment().find((eq) => eq.equipSlot === "weapon" && eq.utilityType === "axe");
       return [
         { label: "Chop wood", goto: "task_chop_wood_1", isDisabled: !hasAxe },
         { label: <span class="text-red-500">Venture deeper</span>, goto: "story_forest_2" },
@@ -33,7 +32,9 @@ const forest: IStory[] = [
     description: "Creatures block your path...",
     type: "encounter",
     limit: 5,
-    onComplete: (ctx: IStoryContext) => ctx.onNavigate("story_forest_3"),
+    onComplete: (gameCtx) => {
+      gameCtx?.onNavigate("story_forest_3");
+    },
     cooldown: 20,
     encounters: [
       {
@@ -52,7 +53,7 @@ const forest: IStory[] = [
       {
         name: "enc_deer_1",
         label: "Frightened deer",
-        chance: 0.2,
+        chance: 1,
         experience: 50,
         drops: [],
         health: 10,

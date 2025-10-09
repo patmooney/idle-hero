@@ -9,7 +9,7 @@ const items: IItem[] = [
     craftType: "weapon",
     craftComplexity: 1,
     craftLevel: 1,
-    ingredients: [["wood_log_1", 15]],
+    ingredients: [{ name: "wood_log_1", count: 15 }],
     masteryType: "mace",
     stats: {
       attMin: 2,
@@ -24,7 +24,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 1,
     craftLevel: 1,
-    ingredients: [["wood_log_1", 20]],
+    ingredients: [{ name: "wood_log_1", count: 20 }],
     stats: {
       physRes: 2,
       maxHealth: 10
@@ -37,7 +37,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 2,
     craftLevel: 1,
-    ingredients: [["wood_log_1", 40]],
+    ingredients: [{ name: "wood_log_1", count: 40 }],
     stats: {
       physRes: 3,
       agility: -1 // bulky
@@ -52,7 +52,7 @@ const items: IItem[] = [
     craftType: "weapon",
     craftComplexity: 2,
     craftLevel: 2,
-    ingredients: [["wood_log_1", 10], ["stone_1", 10]],
+    ingredients: [{ name: "wood_log_1", count: 10 }, { name: "stone_1", count: 10 }],
     masteryType: "axe",
     stats: {
       attMin: 3,
@@ -68,7 +68,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 2,
     craftLevel: 2,
-    ingredients: [["stone_1", 20], ["hay_1", 10]],
+    ingredients: [{ name: "stone_1", count: 20 }, { name: "hay_1", count: 10 }],
     stats: {
       physRes: 4,
       maxHealth: 10,
@@ -84,7 +84,7 @@ const items: IItem[] = [
     craftType: "weapon",
     craftComplexity: 3,
     craftLevel: 2,
-    ingredients: [["copper_ingot_1", 8], ["wood_log_1", 5]],
+    ingredients: [{ name: "copper_ingot_1", count: 8 }, { name: "wood_log_1", count: 5 }],
     masteryType: "sword",
     stats: {
       attMin: 4,
@@ -100,7 +100,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 3,
     craftLevel: 2,
-    ingredients: [["copper_ingot_1", 15]],
+    ingredients: [{ name: "copper_ingot_1", count: 15 }],
     stats: {
       physRes: 5,
       magRes: 1,
@@ -116,7 +116,7 @@ const items: IItem[] = [
     craftType: "weapon",
     craftComplexity: 4,
     craftLevel: 3,
-    ingredients: [["iron_ingot_1", 12], ["wood_log_1", 8]],
+    ingredients: [{ name: "iron_ingot_1", count: 12 }, { name: "wood_log_1", count: 8 }],
     masteryType: "spear",
     stats: {
       attMin: 6,
@@ -132,7 +132,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 4,
     craftLevel: 3,
-    ingredients: [["iron_ingot_1", 8]],
+    ingredients: [{ name: "iron_ingot_1", count: 8 }],
     stats: {
       physRes: 6,
       maxHealth: 15,
@@ -146,7 +146,7 @@ const items: IItem[] = [
     craftType: "armour",
     craftComplexity: 4,
     craftLevel: 3,
-    ingredients: [["iron_ingot_1", 6]],
+    ingredients: [{ name: "iron_ingot_1", count: 6 }],
     stats: {
       physRes: 3,
       agility: -1

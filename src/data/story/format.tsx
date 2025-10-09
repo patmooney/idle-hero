@@ -6,7 +6,7 @@ export const Speech: Component<{ lines: string[] }> = (props) => {
       <For each={props.lines}>{
         (line, idx) => (
           <div>
-            <Show when={idx() === 0}>" .. </Show>{line}<Show when={idx() === props.lines.length - 1}> .. "</Show>
+            <Show when={idx() === 0}>" .. </Show>{/*@once*/line}<Show when={idx() === props.lines.length - 1}> .. "</Show>
           </div>
         )
       }</For>
