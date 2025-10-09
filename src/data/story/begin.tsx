@@ -28,7 +28,7 @@ const story: IStory[] = [
           if (!inventCtx) {
             return;
           }
-          const invent = inventCtx.inventory;
+          const invent = inventCtx.inventory();
           const count = invent.filter((inv) => inv?.name === "hay_1").reduce<number>((acc, inv) => acc + (inv?.count ?? 0), 0);
           if (!count) {
             return;

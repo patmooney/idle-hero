@@ -1,8 +1,9 @@
-import { IItemCraftable, IStory } from "../types";
+import { IFurniture, IItemCraftable, IStory, ItemCount } from "../types";
 
 import itemData from "../item";
 import furnitureData from "../furniture";
 import { IInventoryContext } from "../../provider/inventory";
+import { IGameContext } from "../../provider/game";
 
 const story: IStory[] = [
   {
@@ -26,6 +27,34 @@ const story: IStory[] = [
     </>
   },
   {
+    name: "story_home_2",
+    label: "Building",
+    description: "Build new appliances",
+    type: "dialogue",
+    options: (gameCtx, inventCtx, playerCtx, storyCtx) => {
+      if (!playerCtx || !inventCtx) {
+        return [];
+      }
+      const availableBuilding = playerCtx?.recipes()?.filter((r) => !!r.craftableFurniture)
+        .map((r) => furnitureData[r.craftableFurniture!]);
+      return availableBuilding
+        .map((i) => ({
+          label: i.label,
+          action: () => {
+            storyCtx?.onTask({
+              noRepeat: true,
+              label: `Building`,
+              description: i.label,
+              duration: 100,
+              onComplete: () => buildFurniture(gameCtx, inventCtx!, i)
+            });
+          },
+          isDisabled: !hasIngredients(inventCtx, i),
+          subtext: i.ingredients?.map((ing) => `${itemData[ing.name].label} (${ing.count})`).join(" - ")
+        })) ?? [];
+    }
+  },
+  {
     name: "story_home_4",
     label: "Crafting",
     description: "A workshop",
@@ -44,7 +73,10 @@ const story: IStory[] = [
       if (!playerCtx || !inventCtx) {
         return [];
       }
-      return playerCtx?.recipes()?.filter((i) => (i as IItemCraftable).craftType === "basic")
+      const basicRecipes = playerCtx?.recipes()?.filter((r) => !!r.craftableItem)
+        .map((r) => itemData[r.craftableItem!])
+        .filter((i) => (i as IItemCraftable).craftType === "basic" && (i as IItemCraftable).craftComplexity === 1);
+      return basicRecipes
         .map((i) => ({
           label: i.label,
           action: () => {
@@ -57,7 +89,7 @@ const story: IStory[] = [
             });
           },
           isDisabled: !hasIngredients(inventCtx, i as IItemCraftable),
-          subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing[0]].label} (${ing[1]})`).join(" - ")
+          subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing?.name].label} (${ing?.count})`).join(" - ")
         })) ?? [];
     }
   }
@@ -66,24 +98,30 @@ const story: IStory[] = [
 const craftItem = (ctx: IInventoryContext, item: IItemCraftable) => {
   ctx.addInventory(item.name, 1);
   item.ingredients?.forEach(
-    (ing) => ctx.removeInventory(...ing)
+    (ing) => ctx.removeInventory(ing.name, ing.count)
   );
 };
 
-const hasIngredients = (ctx: IInventoryContext | undefined, item: IItemCraftable) => {
+const buildFurniture = (ctx: IGameContext, inventCtx: IInventoryContext, build: IFurniture) => {
+  ctx.setState("furniture", [...ctx.state.furniture, build.name]);
+  build.ingredients?.forEach(
+    (ing) => inventCtx.removeInventory(ing.name, ing.count)
+  );
+}
+
+const hasIngredients = (ctx: IInventoryContext | undefined, item: { ingredients?: ItemCount[] }) => {
   if (!item.ingredients?.length) {
     return true;
   }
   return item.ingredients.every((ing) => {
     const count = ctx?.inventory().reduce<number>((acc, inv) => {
-      if (inv?.name === ing[0]) {
-        acc = acc + (inv.count ?? 1)
+      if (inv?.name === ing.name) {
+        acc = acc + (inv!.count ?? 1)
       }
       return acc;
     }, 0) ?? 0;
-    return count >= ing[1];
+    return count >= ing.count;
   });
 };
-
 
 export default story;

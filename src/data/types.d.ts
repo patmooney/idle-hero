@@ -21,7 +21,8 @@ export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "fo
 export type CraftingType = "basic" | "weapon" | "armour";
 
 export type LearnType = "recipe" | "skill";
-
+export type ItemCount = { name: string, count: number };
+export type InventItem = ItemCount | null;
 export type FurnitureType = "stash" | "craft";
 
 export interface IFurniture {
@@ -31,10 +32,11 @@ export interface IFurniture {
     storageSize?: number;
     cratingType?: CraftingType;
     craftingComplexity?: number;
+    ingredients?: ItemCount[];
 }
 
 export type IItem = IItemBase | IItemEquipable | IItemCraftable;
-export type IRecipe = IItem & { craftableItem: string };
+export type IRecipe = IItem & { craftableItem?: string, craftableFurniture?: string };
 
 export interface IItemBase {
     name: string;
@@ -58,7 +60,7 @@ export interface IItemCraftable extends IItemBase {
     craftType: CraftingType;
     craftComplexity: number;
     craftLevel: number;
-    ingredients?: [string, number][];
+    ingredients?: ItemCount[];
 }
 
 export interface ISkill {}
@@ -140,8 +142,6 @@ export interface IPlayer {
     mastery: { [key in MasteryType]?: number };
     recipes: string[];
 }
-
-export type InventItem = { name: string, count: number } | null;
 
 export interface IGameState {
     prohibitedItems: string[];

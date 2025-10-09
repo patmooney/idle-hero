@@ -52,6 +52,7 @@ export const Story_Invent: Component = () => {
       return;
     }
     if (playerCtx?.onEquip(item as IItemEquipable)) {
+      inventCtx?.removeInventory(item!.name, 1);
       setSelected(undefined);
     }
   };

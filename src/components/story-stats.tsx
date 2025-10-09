@@ -1,11 +1,13 @@
 import { Component, createMemo, createSignal, For, JSXElement, Match, Switch, useContext } from "solid-js";
 import { BASE_ATTACK_DELAY, MIN_TICK_TIME_MS } from "../utils/constants";
-import type { EquipSlotType } from "../data/types";
+import type { EquipSlotType, IItemEquipable } from "../data/types";
 import { PlayerContext } from "../provider/player";
+import { InventoryContext } from "../provider/inventory";
 
 export const Story_Stats: Component = () => {
   const [view, setView] = createSignal<"equip" | "stats">("stats");
   const playerCtx = useContext(PlayerContext);
+  const inventCtx = useContext(InventoryContext);
 
   const stats = createMemo<{ label: string, value: number | string | JSXElement }[]>(() => {
     const damage = playerCtx?.attackDamage();
@@ -32,6 +34,12 @@ export const Story_Stats: Component = () => {
     onClick?: () => void
   };
 
+  const onUnequip = (i: IItemEquipable) => {
+    if (inventCtx?.addInventory(i.name, 1)) {
+      playerCtx?.onUnequip(i);
+    }
+  };
+
   const equip = createMemo<EquipItem[]>(() => {
     const weapons: EquipSlotType[] = ["weapon", "offhand"];
     const armour: EquipSlotType[] = ["head", "shoulder", "chest", "hand", "leg", "foot"];
@@ -43,7 +51,7 @@ export const Story_Stats: Component = () => {
           return {
             label: item?.label ?? slot, isDisabled: !item,
             subtext: Object.entries(item?.stats ?? {}).map(([k, v]) => `[${k}: ${v}]`).join(""),
-            onClick: item ? () => playerCtx?.onUnequip(item) : undefined
+            onClick: item ? () => onUnequip(item) : undefined
           };
         }
       ),
@@ -54,7 +62,7 @@ export const Story_Stats: Component = () => {
           return {
             label: item?.label ?? slot, isDisabled: !item,
             subtext: Object.entries(item?.stats ?? {}).map(([k, v]) => `[${k}: ${v}]`).join(""),
-            onClick: item ? () => playerCtx?.onUnequip(item) : undefined
+            onClick: item ? () => onUnequip(item) : undefined
           };
         }
       ),

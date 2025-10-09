@@ -77,7 +77,7 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
     }
     drops = drops ?? s.items ?? [];
     let dropped: IDrop[] = [];
-    const exp = s.masteryType ? player?.mastery[s.masteryType] ?? 0 : 0;
+    const exp = s.masteryType ? player?.player.mastery[s.masteryType] ?? 0 : 0;
     for (let drop of drops) {
       let chance = drop.chance;
       if (exp) {

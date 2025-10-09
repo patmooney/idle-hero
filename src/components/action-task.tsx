@@ -20,7 +20,7 @@ export const Action_Task: Component = () => {
   const duration = createMemo(() => {
     const masteryType = storyCtx?.story()?.masteryType;
     if (masteryType) {
-      const cumulative = cumulateBonus(masteryType, playerCtx?.mastery[masteryType] ?? 0);
+      const cumulative = cumulateBonus(masteryType, playerCtx?.player.mastery[masteryType] ?? 0);
       return Math.max(1, (storyCtx?.story()?.duration ?? 100) - (cumulative.durationModifier ?? 0));
     }
     return storyCtx?.story()?.duration ?? 100;

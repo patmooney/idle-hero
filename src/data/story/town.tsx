@@ -3,8 +3,12 @@ import itemData from "../item";
 import { Speech } from "./format";
 
 const toolItems: { name: string, cost: number }[] = [
-  { name: "utility_axe_1", cost: 100 }
+  { name: "utility_axe_1", cost: 1 }
 ]
+
+const buildingRecipes: { name: string, cost: number }[] = [
+  { name: "recipe_bench_basic_1", cost: 1 }
+];
 
 const town: IStory[] = [
   {
@@ -13,7 +17,8 @@ const town: IStory[] = [
     label: "Town Bazaar",
     description: "Souks, stalls, spices, hands... hands... hands...",
     options: [
-      { label: "Tool merchant", goto: "story_town_merchant_tool_1" }
+      { label: "Tool merchant", goto: "story_town_merchant_tool_1" },
+      { label: "Building merchant", goto: "story_town_merchant_building_1" }
     ]
   },
   {
@@ -27,7 +32,7 @@ const town: IStory[] = [
         (tool) => {
           const item = itemData[tool.name];
           return {
-            label: item?.label ?? "UNKNOWN",
+            label: `${item?.label ?? "UNKNOWN"} - ${tool.cost}g`,
             action: () => {
               inventCtx?.addInventory(item.name, 1);
               playerCtx?.onAddStat("gold", 0 - tool.cost);
@@ -38,7 +43,31 @@ const town: IStory[] = [
         }
       );
     }
+  },
+  {
+    type: "dialogue",
+    name: "story_town_merchant_building_1",
+    label: "Building Merchant",
+    description: <>Beard down to his bare nipples <Speech lines={[`DIY... home improvements`, `Sweat...`, `Muscles...`]} /></>,
+    options: (gameCtx, _, playerCtx): IOption[] => {
+      const gold = playerCtx?.player.stats.gold;
+      return buildingRecipes.map<IOption>(
+        (recipe) => {
+          const item = itemData[recipe.name];
+          return {
+            label: `${item?.label ?? "UNKNOWN"} - ${recipe.cost}g`,
+            action: () => {
+              playerCtx.onAddRecipe(recipe.name);
+              playerCtx?.onAddStat("gold", 0 - recipe.cost);
+              gameCtx?.onNavigate("story_town_merchant_building_1");
+            },
+            isDisabled: recipe.cost > (gold ?? 0)
+          };
+        }
+      );
+    }
   }
+
 ];
 
 export default town;
