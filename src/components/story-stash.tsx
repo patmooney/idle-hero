@@ -65,7 +65,7 @@ export const Story_Stash: Component = () => {
               <div class="font-bold">{selectedItem()?.item.label} ({selectedItem()?.count})</div>
             </div>
             <div class="flex flex-col gap-1 justify-between">
-              <div class="px-2 py-1 bg-blue-300 w-full flex flex-row justify-between items-center mb-2">
+              <div class="px-2 py-1 bg-blue-900 border border-blue-500 rounded w-full flex flex-row justify-between items-center mb-2">
                 <span class="font-bold text-xl text-black">Transfer</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onStash(1)}>One</Button>
@@ -73,7 +73,7 @@ export const Story_Stash: Component = () => {
                   <Button onClick={() => onStash(Infinity)}>All</Button>
                 </div>
               </div>
-              <div class="px-2 py-1 bg-red-300 w-full flex flex-row justify-between items-center">
+              <div class="px-2 py-1 bg-red-900 border border-red-500 rounded w-full flex flex-row justify-between items-center mb-2">
                 <span class="font-bold text-xl text-black">Drop</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onRemove(1)}>One</Button>

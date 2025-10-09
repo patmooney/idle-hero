@@ -6,6 +6,8 @@ import { GameContext } from "../provider/game";
 import { InventoryContext } from "../provider/inventory";
 import { PlayerContext } from "../provider/player";
 
+import itemData from "../data/item";
+
 export const Action_Task: Component = () => {
   const gameCtx = useContext(GameContext);
   const inventCtx = useContext(InventoryContext);
@@ -89,10 +91,11 @@ export const Action_Task: Component = () => {
         (drop) => !!inventCtx?.addInventory(drop)
       );
     if (drops?.length) {
+      const labels = drops.map((d) => itemData[d]?.label ?? "Unknown");
       gameCtx?.onLog(
         <>
           You gained:
-          <span class="font-bold m-1">{/*@once*/drops?.join(", ")}</span>
+          <span class="font-bold m-1">{/*@once*/labels?.join(", ")}</span>
         </>, "drop"
       );
     }

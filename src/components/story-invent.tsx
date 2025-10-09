@@ -1,6 +1,6 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
-import { IItemEquipable, InventItem } from "../data/types";
-import { Button} from "./Button";
+import type { IItemEquipable, InventItem, ItemCategory } from "../data/types";
+import { Button } from "./Button";
 import { InventoryContext } from "../provider/inventory";
 import { PlayerContext } from "../provider/player";
 import { GameContext } from "../provider/game";
@@ -40,7 +40,8 @@ export const Story_Invent: Component = () => {
     if (!gameCtx || !inventCtx || !playerCtx || !storyCtx) {
       return;
     }
-    if (item.item.use?.(gameCtx, inventCtx, playerCtx, storyCtx)) {
+    const inStack = item.count;
+    if (item.item.use?.(gameCtx, inventCtx, playerCtx, storyCtx) && inStack <= 1) {
       setSelected(undefined);
     }
   };
@@ -114,7 +115,7 @@ export const Story_Invent: Component = () => {
                 </Show>
               </div>
               <Show when={isInStash()}>
-                <div class="px-2 py-1 bg-blue-300 w-full flex flex-row justify-between items-center mb-2">
+                <div class="px-2 py-1 bg-blue-900 border border-blue-500 rounded w-full flex flex-row justify-between items-center mb-2">
                   <span class="font-bold text-xl text-black">Stash</span>
                   <div class="flex flex-row gap-4">
                     <Button onClick={() => onStash(1)}>One</Button>
@@ -123,7 +124,7 @@ export const Story_Invent: Component = () => {
                   </div>
                 </div>
               </Show>
-              <div class="px-2 py-1 bg-red-300 w-full flex flex-row justify-between items-center">
+              <div class="px-2 py-1 bg-red-900 border border-red-500 w-full flex flex-row justify-between items-center rounded">
                 <span class="font-bold text-xl text-black">Drop</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onRemove(1)}>One</Button>
@@ -149,20 +150,50 @@ export const InventorySlot: Component<IInventorySlotProps> = (props) => {
     e.stopPropagation();
     props.onSelect();
   };
-  const label = createMemo(() => {
+
+  const item = createMemo(() => {
     if (!props.item) {
       return null;
+     }
+    return itemData[props.item.name];
+  });
+
+  const category = createMemo(() => {
+    const i = item();
+    if (!i) {
+      return null;
     }
-    return itemData[props.item.name].label;
+    return i.category ?? (i as IItemEquipable).equipSlot ?? "unknown";
+  });
+
+  const colour = createMemo<ItemCategory | "equip" | "unknown" | null>(() => {
+    const i = item();
+    if (!i) {
+      return null;
+    }
+    return i.category ?? ((i as IItemEquipable).equipSlot ? "equip" : "unknown");
   });
 
   return (
-    <Show when={props.item} fallback={
+    <Show when={item()} fallback={
       <div class="border p-1 flex flex-row justify-between border-gray-700 text-gray-700">Empty</div>
     }>
-      <div class="border p-1 cursor-pointer flex flex-row justify-between" onClick={onClick}>
-        <div>{label()}</div>
-        <div>({props.item?.count})</div>
+      <div class="border p-1 cursor-pointer flex flex-col" onClick={onClick}>
+        <div class="flex flex-row justify-between">
+          <div>{item()!.label}</div>
+          <div class="flex flex-row gap-2 items-center">
+            <div
+              class="text-sm"
+              classList={{
+                "text-yellow-500": colour() === "book",
+                "text-green-500": colour() === "resource",
+                "text-red-500": colour() === "food",
+                "text-blue-500": colour() === "equip"
+              }}
+            >[{category()}]</div>
+            ({props.item?.count})
+          </div>
+        </div>
       </div>
     </Show>
   );

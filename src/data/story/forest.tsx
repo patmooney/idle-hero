@@ -24,7 +24,10 @@ const forest: IStory[] = [
     cooldown: 10,
     experience: 1,
     utilityType: "axe",
-    items: [{ name: "wood_log_1", chance: 1 }]
+    items: [
+      { name: "wood_log_1", chance: 1 },
+      { name: "food_acorn_1", chance: 0.1 },
+    ]
   },
   {
     name: "story_forest_2",
@@ -41,7 +44,7 @@ const forest: IStory[] = [
         name: "enc_rabbit_1",
         label: "Little rabbit",
         chance: 0.4,
-        experience: 50,
+        experience: 20,
         drops: [],
         health: 5,
         stats: {
@@ -53,8 +56,8 @@ const forest: IStory[] = [
       {
         name: "enc_deer_1",
         label: "Frightened deer",
-        chance: 1,
-        experience: 50,
+        chance: 0.2,
+        experience: 40,
         drops: [],
         health: 10,
         stats: {
@@ -68,7 +71,10 @@ const forest: IStory[] = [
         label: "Dead tree",
         chance: 1,
         experience: 10,
-        health: 10
+        health: 10,
+        drops: [
+          { name: "food_acorn_1", chance: 0.5 }
+        ]
       }
     ]
   },

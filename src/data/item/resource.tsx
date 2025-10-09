@@ -4,13 +4,13 @@ const items: IItem[] = [
   {
     name: "hay_1",
     label: "Hay",
-    stackable: true,
+    category: "resource",
     maxStack: 100
   },
   {
     name: "wood_log_1",
     label: "Wooden log",
-    stackable: true,
+    category: "resource",
     maxStack: 100
   }
 ];

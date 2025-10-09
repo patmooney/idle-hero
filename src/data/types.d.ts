@@ -19,6 +19,7 @@ export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" 
 export type ItemUtilityType = "axe" | "pickaxe";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
 export type CraftingType = "basic" | "weapon" | "armour";
+export type ItemCategory = "misc" | "food" | "resource" | "book";
 
 export type LearnType = "recipe" | "skill";
 export type ItemCount = { name: string, count: number };
@@ -41,9 +42,9 @@ export type IRecipe = IItem & { craftableItem?: string, craftableFurniture?: str
 export interface IItemBase {
     name: string;
     label: string;
+    category?: ItemCategory;
     stats?: IStats;
     exclusive?: boolean; // can only hold 1
-    stackable?: boolean;
     maxStack?: number;
     useVerb?: string;
     use?: (gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => boolean;

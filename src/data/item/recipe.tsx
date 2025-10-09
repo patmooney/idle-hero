@@ -4,35 +4,29 @@ const items: IRecipe[] = [
   {
     name: "recipe_hay_hand_1",
     label: "Recipe: Hay hand wraps",
-    stackable: false,
-    exclusive: true,
     craftableItem: "hay_hand_1"
   },
   {
     name: "recipe_bench_basic_1",
     label: "Recipe: Basic crafting table",
-    stackable: false,
-    exclusive: true,
     craftableFurniture: "furniture_bench_basic_1",
   },
   {
     name: "recipe_hay_head_1",
     label: "Recipe: Hay bandana",
-    stackable: false,
-    exclusive: true,
     craftableItem: "hay_head_1"
   },
   {
     name: "recipe_hay_chest_1",
     label: "Recipe: Hay vest",
-    stackable: false,
-    exclusive: true,
     craftableItem: "hay_chest_1"
   }
 ].map(
   (item) => ({
     ...item,
     useVerb: "Read",
+    category: "book",
+    exclusive: true,
     use: (gameCtx, inventCtx, playerCtx, storyCtx) => {
       storyCtx?.onTask({
         noRepeat: true,

@@ -108,7 +108,7 @@ export const InventoryProvider: ParentComponent<{
       return [newInvent, 0];
     }
     let remaining = toAdd;
-    if (item.stackable && item.maxStack) {
+    if (item.maxStack) {
       // fill up any stacks first
       newInvent = newInvent.map(
         (inv) => {

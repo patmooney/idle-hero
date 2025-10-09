@@ -91,8 +91,15 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
       }
     }
     return dropped?.map(
-      (drop) => itemData[drop.name].name
-    ).filter(Boolean);
+      (drop) => {
+        const item = itemData[drop.name];
+        if (!item) {
+          console.error(`Unable to find drop ${drop.name}`);
+          return undefined;
+        }
+        return item.name;
+      }
+    ).filter(Boolean) as string[];
   };
 
   const onTask = (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => {

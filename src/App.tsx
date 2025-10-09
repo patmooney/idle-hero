@@ -35,6 +35,11 @@ const Story = () => {
     }
     return view();
   });
+
+  const expandLog = createMemo(() => {
+    return currentView() === "story" && ctx?.story()?.type === "encounter";
+  });
+
   return (
     <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
       <div class="h-3/10 bg-gray-400">
@@ -45,10 +50,10 @@ const Story = () => {
           <ActionView />
         </div>
       </div>
-      <div class="h-1/10">
+      <div classList={{ "h-1/10": !expandLog(), "h-4/10": expandLog() }}>
         <Log />
       </div>
-      <div class="h-5/10 bg-gray-800">
+      <div class="bg-gray-800" classList={{ "h-2/10": expandLog(), "h-5/10": !expandLog() }}>
         <Switch fallback={<div>Unknown view</div>}>
           <Match when={currentView() === "story"}>
             <Story_Dialogue />

@@ -4,7 +4,6 @@ const items: IItem[] = [
   {
     name: "hay_hand_1",
     label: "Hay hand wraps",
-    stackable: false,
     equipSlot: "hand",
     craftComplexity: 1,
     craftType: "basic",
@@ -18,7 +17,6 @@ const items: IItem[] = [
   {
     name: "hay_head_1",
     label: "Hay bandana",
-    stackable: false,
     equipSlot: "head",
     craftComplexity: 1,
     craftType: "basic",
@@ -31,7 +29,6 @@ const items: IItem[] = [
   {
     name: "hay_chest_1",
     label: "Hay vest",
-    stackable: false,
     equipSlot: "chest",
     craftComplexity: 1,
     craftType: "basic",
@@ -44,7 +41,6 @@ const items: IItem[] = [
   {
     name: "utility_axe_1",
     label: "Rusty axe",
-    stackable: false,
     equipSlot: "weapon",
     utilityType: "axe",
     stats: {}

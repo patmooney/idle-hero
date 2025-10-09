@@ -80,12 +80,13 @@ const story: IStory[] = [
       {
         name: "enc_scarecrow_1",
         label: "Scarecrow",
-        health: 1,
+        health: 10,
         chance: 1,
-        experience: 50,
+        experience: 10,
         drops: [
-          { name: "hay_1", chance: 1 },
-          { name: "recipe_hay_hand_1", chance: 1 },
+          { name: "hay_1", chance: 0.5 },
+          { name: "food_worm_1", chance: 1 },
+          { name: "recipe_hay_hand_1", chance: 0.05 },
           { name: "recipe_hay_head_1", chance: 0.05 },
           { name: "recipe_hay_chest_1", chance: 0.05 },
         ]

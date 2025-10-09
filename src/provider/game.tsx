@@ -127,6 +127,8 @@ export const Game: ParentComponent = (props) => {
         const totalTime = Math.min(Date.now() - freezeTime, MAX_CATCHUP_MS);
         let actionTime = Math.floor(totalTime / MIN_TICK_TIME_MS);
         doCatchup(actionTime);
+      } else {
+        setPause(false);
       }
     }
   });
@@ -147,6 +149,8 @@ export const Game: ParentComponent = (props) => {
       const totalTime = Math.min(Date.now() - freezeTime, MAX_CATCHUP_MS);
       let actionTime = Math.floor(totalTime / MIN_TICK_TIME_MS);
       doCatchup(actionTime);
+    } else {
+      setPause(false);
     }
   };
 
@@ -183,12 +187,8 @@ export const Game: ParentComponent = (props) => {
           todo--;
           i--;
         }
-        if (todo > 0) {
-          doCatchup(todo);
-        } else {
-          setPause(false);
-        }
-      })
+        doCatchup(todo);
+      });
     } else {
       setPause(false);
     }
