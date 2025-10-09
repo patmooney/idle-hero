@@ -53,7 +53,7 @@ const forest: IStory[] = [
       {
         name: "enc_deer_1",
         label: "Frightened deer",
-        chance: 0.2,
+        chance: 1,
         experience: 50,
         drops: [],
         health: 10,

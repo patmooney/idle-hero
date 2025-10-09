@@ -55,7 +55,6 @@ export const Action_Task: Component = () => {
     if (remaining() <= 0 && active()) {
       onFinish();
     } else {
-      console.log(remaining());
       setRemaining(remaining() - 1);
     }
   };

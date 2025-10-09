@@ -12,15 +12,15 @@ export const Story_Stats: Component = () => {
     const tps = 1000 / MIN_TICK_TIME_MS;
     const attackRate = 1 / ((playerCtx?.attackRate() ?? BASE_ATTACK_DELAY) / tps);
     return [
-      { label: "Health", value: playerCtx?.stats.health ?? 0 },
-      { label: "Max health", value: playerCtx?.stats.maxHealth ?? 0 },
+      { label: "Health", value: playerCtx?.player.stats.health ?? 0 },
+      { label: "Max health", value: playerCtx?.player.stats.maxHealth ?? 0 },
       { label: "", value: <>&nbsp;</> },
       { label: "Att. min", value: damage?.at(0) ?? 0 },
       { label: "Att. max", value: damage?.at(1) ?? 0 },
       { label: "Att. rate", value: `${attackRate?.toFixed(2) ?? 0} p/s` },
       { label: "", value: <>&nbsp;</> },
-      { label: "Phys. res", value: playerCtx?.stats.physRes ?? 0 },
-      { label: "Mag. res", value: playerCtx?.stats.magRes ?? 0 },
+      { label: "Phys. res", value: playerCtx?.player.stats.physRes ?? 0 },
+      { label: "Mag. res", value: playerCtx?.player.stats.magRes ?? 0 },
     ];
   });
 

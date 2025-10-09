@@ -12,7 +12,7 @@ export interface IPlayerContext {
   attackRate: Accessor<number>;
   equipment: Accessor<IItemEquipable[]>;
   mastery: Store<{ [key in MasteryType]?: number }>;
-  stats: Store<IPlayerStats>;
+  player: Store<IPlayer>;
   recipes: Accessor<IRecipe[]>;
 
   onEquip: (item: IItemEquipable) => boolean;
@@ -140,7 +140,7 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
   }
 
   const playerValue: IPlayerContext = {
-    attackRate, attackDamage, stats: props.player.stats,
+    attackRate, attackDamage, player: props.player,
     equipment, mastery: props.player.mastery,
     onAddStat, onAddMastery, onEquip, onUnequip,
     recipes, getMasteryPerk, weaponMastery, onAddRecipe

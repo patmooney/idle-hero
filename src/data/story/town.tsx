@@ -22,7 +22,7 @@ const town: IStory[] = [
     label: "Tool Merchant",
     description: <>A burly man, skin of leather <Speech lines={[`The very finest tools`]} /></>,
     options: (gameCtx, inventCtx, playerCtx): IOption[] => {
-      const gold = playerCtx?.stats.gold;
+      const gold = playerCtx?.player.stats.gold;
       return toolItems.map<IOption>(
         (tool) => {
           const item = itemData[tool.name];

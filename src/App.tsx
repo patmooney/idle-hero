@@ -27,7 +27,6 @@ const App = () => (
 
 const Story = () => {
   const [view, setView] = createSignal<ContextScreen>("story");
-  const gctx = useContext(GameContext);
   const ctx = useContext(StoryContext);
 
   const currentView = createMemo<ContextScreen>(() => {
@@ -38,7 +37,6 @@ const Story = () => {
   });
   return (
     <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
-      {ctx?.story()?.name} - {gctx?.nav().at(-1)}
       <div class="h-3/10 bg-gray-400">
         <div class="h-1/10">
           <Overview />
@@ -189,15 +187,15 @@ export const Log: Component = () => {
 };
 
 const Overview: Component = () => {
-  const player = useContext(PlayerContext);
+  const playerCtx = useContext(PlayerContext);
   const game = useContext(GameContext);
 
   return (
     <div class="flex flex-row bg-black px-1 justify-between">
-      <div class="text-red-500">HP {player?.stats.health}/{player?.stats.maxHealth}</div>
-      <div class="text-yellow-500">Gold {player?.stats.gold}</div>
+      <div class="text-red-500">HP {playerCtx?.player.stats.health}/{playerCtx?.player.stats.maxHealth}</div>
+      <div class="text-yellow-500">Gold {playerCtx?.player.stats.gold}</div>
       <div class="text-white">Age {game?.year()}</div>
-      <div class="text-green-500">Lvl {getLevel(player?.stats.experience ?? 0)} ({(getProgress(player?.stats.experience ?? 0) * 100).toFixed(0)}%)</div>
+      <div class="text-green-500">Lvl {getLevel(playerCtx?.player.stats.experience ?? 0)} ({(getProgress(playerCtx?.player.stats.experience ?? 0) * 100).toFixed(0)}%)</div>
     </div>
   );
 };

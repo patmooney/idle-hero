@@ -126,7 +126,7 @@ export const Action_Encounter: Component = () => {
 
   const onEnemyAttack = () => {
     const shouldLog = !ctx?.pause();
-    const [ player, story ] = [playerCtx, storyCtx?.story()];
+    const [ player, story ] = [playerCtx?.player, storyCtx?.story()];
     if (!player || !story) {
       return;
     }
@@ -175,7 +175,7 @@ export const Action_Encounter: Component = () => {
           <div class="text-red-800">{encounter()?.label}</div>
 
           <div class="h-8">
-            <Progress type="red" max={playerCtx?.stats.maxHealth ?? 10} value={playerCtx?.stats.health ?? 0} label="You" showNumber></Progress>
+            <Progress type="red" max={playerCtx?.player.stats.maxHealth ?? 10} value={playerCtx?.player.stats.health ?? 0} label="You" showNumber></Progress>
             <div class="h-2">
               <Ticker name={`${name()}_att`} ticks={attackRate()} onFinish={onFinish} type="yellow" isSmall />
             </div>
