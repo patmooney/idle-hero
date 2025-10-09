@@ -11,12 +11,12 @@ type masteryDisplay = { label: string, progress: number, level: number, name: Ma
 
 export const Story_Skills: Component = () => {
   const [view, setView] = createSignal<views>("mastery");
-  const player = useContext(PlayerContext);
+  const playerCtx = useContext(PlayerContext);
 
   const [selected, setSelected] = createSignal<masteryDisplay>();
 
   const mastery = createMemo<masteryDisplay[]>(() => {
-    return Object.entries(player?.mastery ?? {}).map(
+    return Object.entries(playerCtx?.player.mastery ?? {}).map(
       ([k, v]) => {
         const m = masteryData[k as MasteryType];
         return { label: m?.label ?? "", progress: (getProgress(v, masteryXP) * 100), level: getLevel(v, masteryXP), name: k as MasteryType };
@@ -34,7 +34,7 @@ export const Story_Skills: Component = () => {
     if (name === undefined) {
       return;
     }
-    const level = getLevel(player?.mastery[name] ?? 0, masteryXP);
+    const level = getLevel(playerCtx?.player.mastery[name] ?? 0, masteryXP);
     const indexOf = masteryData[name]?.bonus.findLastIndex((b) => b.level <= level);
     return masteryData[name]?.bonus.slice(0, (indexOf ?? 0)+2).map(
       (b, idx, arr) => ({
@@ -84,7 +84,7 @@ export const Story_Skills: Component = () => {
             }</For>
           </Match>
           <Match when={view() === "recipes"}>
-            <For each={player?.recipes()}>{
+            <For each={playerCtx?.recipes()}>{
               (m) => (
                 <div class="flex flex-row justify-between items-center">
                   <div>{m.label}</div>

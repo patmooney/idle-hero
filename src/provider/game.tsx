@@ -99,6 +99,10 @@ export const Game: ParentComponent = (props) => {
     );
   };
 
+  setInterval(() => {
+    saveState();
+  }, 10_000)
+
   // Better than `addEventListener` to a EventTarget because we cannot know
   // if anything is currently subscribed to the event, so time will always be ticking
   // We probably only want time to tick if they are doing anything
@@ -157,6 +161,7 @@ export const Game: ParentComponent = (props) => {
   };
 
   const saveState = () => {
+    console.log("Saving...");
     const toSave: IState = {
       player: unwrap(player),
       state: unwrap(state),
