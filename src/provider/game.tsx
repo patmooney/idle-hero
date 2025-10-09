@@ -160,6 +160,8 @@ export const Game: ParentComponent = (props) => {
     saveState();
   };
 
+  (window as any).cs = onClearState;
+
   const saveState = () => {
     console.log("Saving...");
     const toSave: IState = {

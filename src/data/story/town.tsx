@@ -49,7 +49,7 @@ const town: IStory[] = [
     name: "story_town_merchant_building_1",
     label: "Building Merchant",
     description: <>Beard down to his bare nipples <Speech lines={[`DIY... home improvements`, `Sweat...`, `Muscles...`]} /></>,
-    options: (gameCtx, _, playerCtx): IOption[] => {
+    options: (gameCtx, inventCtx, playerCtx): IOption[] => {
       const gold = playerCtx?.player.stats.gold;
       return buildingRecipes.map<IOption>(
         (recipe) => {
@@ -57,7 +57,7 @@ const town: IStory[] = [
           return {
             label: `${item?.label ?? "UNKNOWN"} - ${recipe.cost}g`,
             action: () => {
-              playerCtx.onAddRecipe(recipe.name);
+              inventCtx?.addInventory(item.name, 1);
               playerCtx?.onAddStat("gold", 0 - recipe.cost);
               gameCtx?.onNavigate("story_town_merchant_building_1");
             },

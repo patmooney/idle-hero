@@ -13,7 +13,7 @@ const items: IRecipe[] = [
     label: "Recipe: Basic crafting table",
     stackable: false,
     exclusive: true,
-    craftableFurniture: "bench_basic_1",
+    craftableFurniture: "furniture_bench_basic_1",
   },
   {
     name: "recipe_hay_head_1",
@@ -41,7 +41,7 @@ const items: IRecipe[] = [
         duration: 100,
         onComplete: () => {
           if (!playerCtx?.recipes()?.find((r) => r.craftableItem === item.craftableItem)) {
-            playerCtx?.onAddRecipe(item.craftableItem ?? item.craftableFurniture);
+            playerCtx?.onAddRecipe(item.name);
             gameCtx?.setState("prohibitedItems", [...(gameCtx?.state.prohibitedItems ?? []), item.name]);
           }
           inventCtx?.removeInventory(item.name, 1);
