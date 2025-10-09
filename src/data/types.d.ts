@@ -1,8 +1,8 @@
-import {JSX, JSXElement} from "solid-js";
-import {IGameContext} from "../provider/game";
-import {IInventoryContext} from "../provider/inventory";
-import {IPlayerContext} from "../provider/player";
-import {IStoryContext} from "../provider/story";
+import { JSX, JSXElement } from "solid-js";
+import { IGameContext } from "../provider/game";
+import { IInventoryContext } from "../provider/inventory";
+import { IPlayerContext } from "../provider/player";
+import { IStoryContext } from "../provider/story";
 
 export interface IEncounter {
     name: string;
@@ -143,9 +143,10 @@ export interface IPlayer {
 export type InventItem = { name: string, count: number } | null;
 
 export interface IGameState {
-    prohibitedItems?: string[];
-    furniture?: string[];
-    stash?: InventItem[];
+    prohibitedItems: string[];
+    furniture: string[];
+    inventory: InventItem[];
+    stash: InventItem[];
 }
 
 export type LogType = "bad" | "good" | "meta" | "drop" | "basic";

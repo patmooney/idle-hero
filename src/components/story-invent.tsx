@@ -77,8 +77,7 @@ export const Story_Invent: Component = () => {
       : count;
 
     if (item) {
-      const added = inventCtx?.addStash(item.item.name, count);
-      inventCtx?.removeInventory(item.item.name, added)
+      inventCtx?.addStash(item.item.name, count);
     };
   };
   const isInStash = createMemo(() => {
@@ -144,7 +143,7 @@ interface IInventorySlotProps {
   onSelect: () => void;
 }
 
-const InventorySlot: Component<IInventorySlotProps> = (props) => {
+export const InventorySlot: Component<IInventorySlotProps> = (props) => {
   const onClick = (e: MouseEvent) => {
     e.stopPropagation();
     props.onSelect();

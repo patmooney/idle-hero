@@ -1,20 +1,18 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
-import { StoryContext } from "../provider/story";
-import { IItem } from "../data/types";
 
 import itemData from "../data/item";
-import {Button} from "./Button";
+import { Button } from "./Button";
+import { InventoryContext } from "../provider/inventory";
+import { GameContext } from "../provider/game";
+import { InventorySlot } from "./story-invent";
 
 export const Story_Stash: Component = () => {
-  const ctx = useContext(StoryContext);
+  const inventCtx = useContext(InventoryContext);
+  const gameCtx = useContext(GameContext);
   const [selected, setSelected] = createSignal<number>();
 
-  const stashItems = createMemo(() =>
-    (ctx?.state.stash ?? []).map((s) => s ? ({ ...itemData[s.name], stack: s.stack }) : null)
-  );
-
   const onSelect = (idx: number) => {
-    if (idx < 0 || !ctx?.state.stash[idx]) {
+    if (idx < 0 || !inventCtx?.stash()[idx]) {
       return;
     }
     setSelected(idx);
@@ -25,16 +23,18 @@ export const Story_Stash: Component = () => {
     if (idx < 0) {
       return;
     }
-    return stashItems().at(idx);
+    const item = inventCtx?.stash().at(idx);
+    return item ? { item: itemData[item.name], count: item.count } : null;
   });
+
 
   const onRemove = (count: number) => {
     const item = selectedItem();
     if (!item) {
       return;
     }
-    ctx?.removeInventory(item, count);
-    if (count >= (item.stack ?? 1)) {
+    inventCtx?.removeInventory(item.item.name, count);
+    if (count >= (item.count ?? 1)) {
       setSelected(undefined);
     }
   };
@@ -45,16 +45,15 @@ export const Story_Stash: Component = () => {
       return;
     }
     count = count === Infinity
-      ? ctx?.state.stash.reduce<number>((acc, i) => i?.name === item.name ? acc + i.stack : acc, 0) ?? 0
+      ? inventCtx?.stash().reduce<number>((acc, i) => i?.name === item.item.name ? acc + i.count : acc, 0) ?? 0
       : count;
-    const added = ctx?.addInventory(item, count);
-    ctx?.removeStash(item, added)
+    inventCtx?.removeStash(item.item.name, count)
   };
 
   return (
     <div class="h-full relative pb-2">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
-        <For each={stashItems()}>{
+        <For each={inventCtx?.stash()}>{
           (item, idx) => <InventorySlot item={item} onSelect={() => onSelect(idx())} />
         }</For>
       </div>
@@ -63,14 +62,14 @@ export const Story_Stash: Component = () => {
           <div class="flex flex-col gap-2">
             <div class="flex flex-row justify-center relative mb-3">
               <span class="absolute left-0 top-0 font-bold cursor-pointer border-2 rounded-xl px-2 hover:bg-white hover:text-black" onClick={() => setSelected(undefined)}>X</span>
-              <div class="font-bold">{selectedItem()?.label} ({selectedItem()?.stack})</div>
+              <div class="font-bold">{selectedItem()?.item.label} ({selectedItem()?.count})</div>
             </div>
             <div class="flex flex-col gap-1 justify-between">
               <div class="px-2 py-1 bg-blue-300 w-full flex flex-row justify-between items-center mb-2">
                 <span class="font-bold text-xl text-black">Transfer</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onStash(1)}>One</Button>
-                  <Button onClick={() => onStash(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onStash(selectedItem()?.count ?? 1)}>Stack</Button>
                   <Button onClick={() => onStash(Infinity)}>All</Button>
                 </div>
               </div>
@@ -78,7 +77,7 @@ export const Story_Stash: Component = () => {
                 <span class="font-bold text-xl text-black">Drop</span>
                 <div class="flex flex-row gap-4">
                   <Button onClick={() => onRemove(1)}>One</Button>
-                  <Button onClick={() => onRemove(selectedItem()?.stack ?? 1)}>Stack</Button>
+                  <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
                   <Button onClick={() => onRemove(Infinity)}>All</Button>
                 </div>
               </div>
@@ -86,31 +85,9 @@ export const Story_Stash: Component = () => {
           </div>
         </div>
       </Show>
-      <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => ctx?.onNavigate("_back")}>
+      <div class="w-full border content-center cursor-pointer h-12 text-lg font-bold mt-auto" onClick={() => gameCtx?.onNavigate("_back")}>
         Leave stash
       </div>
     </div>
-  );
-}
-
-interface IInventorySlotProps {
-  item: (IItem & { stack?: number }) | null,
-  onSelect: () => void;
-}
-
-const InventorySlot: Component<IInventorySlotProps> = (props) => {
-  const onClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    props.onSelect();
-  };
-  return (
-    <Show when={props.item} fallback={
-      <div class="border p-1 flex flex-row justify-between border-gray-700 text-gray-700">Empty</div>
-    }>
-      <div class="border p-1 cursor-pointer flex flex-row justify-between" onClick={onClick}>
-        <div>{props.item?.label}</div>
-        <div>({props.item?.stack})</div>
-      </div>
-    </Show>
   );
 }

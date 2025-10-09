@@ -1,5 +1,5 @@
 import { Accessor, batch, createContext, createSignal, JSXElement, onMount, ParentComponent, Setter } from "solid-js";
-import { IGameState, ILogItem, InventItem, IPlayer, LogType } from "../data/types";
+import { IGameState, ILogItem, IPlayer, LogType } from "../data/types";
 import { unstore, store } from "../utils/store";
 import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
 import { DEFAULT_STORY, MAX_CATCHUP_MS, MAX_INVENT, MIN_TICK_TIME_MS, TICKS_IN_YEAR } from "../utils/constants";
@@ -22,6 +22,8 @@ export interface IGameContext {
   setNav: Setter<string[]>;
   onLog: (msg: string | JSXElement, type: LogType) => void;
   log: Accessor<ILogItem[]>;
+
+  onClearState: () => void;
 }
 
 export interface IState {
@@ -30,7 +32,6 @@ export interface IState {
   ticks: number;
   story: string;
   nav: string[];
-  inventory: InventItem[];
 }
 
 const defaultPlayer: IPlayer = {
@@ -45,6 +46,13 @@ const defaultPlayer: IPlayer = {
   recipes: []
 };
 
+const defaultState: IGameState = {
+  prohibitedItems: [],
+  stash: new Array(2).fill(null),
+  furniture: [],
+  inventory: new Array(MAX_INVENT).fill(null)
+}
+
 export const GameContext = createContext<IGameContext>();
 
 const FREEZE_TIME_STORE_KEY = "freeze_time";
@@ -54,7 +62,7 @@ export const Game: ParentComponent = (props) => {
   const [log, setLog] = createSignal<ILogItem[]>([]);
   const [story, setStory] = createSignal<string>(DEFAULT_STORY);
   const [player, setPlayer] = createStore<IPlayer>(defaultPlayer);
-  const [state, setState] = createStore<IGameState>({ prohibitedItems: [] });
+  const [state, setState] = createStore<IGameState>(defaultState);
   const [nav, setNav] = createSignal<string[]>([DEFAULT_STORY]);
 
   const [ticks, setTicks] = createSignal<number>(0);
@@ -63,8 +71,6 @@ export const Game: ParentComponent = (props) => {
   const [nextYear, setNextYear] = createSignal<number>(TICKS_IN_YEAR);
   const [year, setYear] = createSignal<number>(15);
   const [activities, setActivities] = createSignal<([string, (() => void)])[]>([]);
-
-  const [inventory, setInventory] = createSignal<({ name: string, count: number } | null)[]>(new Array(MAX_INVENT).fill(null));
 
   onMount(() => {
     setInterval(() => {
@@ -124,14 +130,12 @@ export const Game: ParentComponent = (props) => {
   const loadState = () => {
     const state = unstore<IState>(STATE_STORE_KEY);
     if (state) {
-      console.log(state);
       batch(() => {
         setStory(state.story);
         setPlayer(state.player);
         setState(state.state);
         setNav(state.nav);
         setTicks(state.ticks);
-        setInventory(state.inventory ?? new Array(MAX_INVENT).fill(null));
       });
     }
     const freezeTime = unstore<number>(FREEZE_TIME_STORE_KEY);
@@ -142,6 +146,16 @@ export const Game: ParentComponent = (props) => {
     }
   };
 
+  const onClearState = () => {
+    batch(() => {
+      setPlayer(defaultPlayer);
+      setState(defaultState);
+      setTicks(0);
+      onNavigate(DEFAULT_STORY);
+    });
+    saveState();
+  };
+
   const saveState = () => {
     const toSave: IState = {
       player: unwrap(player),
@@ -149,7 +163,6 @@ export const Game: ParentComponent = (props) => {
       ticks: ticks(),
       story: story(),
       nav: nav(),
-      inventory: inventory()
     };
     store(STATE_STORE_KEY, toSave);
   };
@@ -220,12 +233,13 @@ export const Game: ParentComponent = (props) => {
   const value: IGameContext = {
     state, setState,
     year, startActivity, endActivity,
-    onNavigate, nav, onLog, log, pause, setNav
+    onNavigate, nav, onLog, log, pause, setNav,
+    onClearState
   };
 
   return (
     <GameContext.Provider value={value}>
-      <InventoryProvider inventory={inventory} setInventory={setInventory}>
+      <InventoryProvider state={state} setState={setState}>
         <PlayerProvider player={player} setPlayer={setPlayer}>
           <StoryProvider story={story} setStory={setStory}>
             {props.children}

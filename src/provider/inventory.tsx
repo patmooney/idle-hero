@@ -1,9 +1,11 @@
-import { Accessor, createContext, ParentComponent, Setter, useContext } from "solid-js";
+import { Accessor, batch, createContext, createEffect, createMemo, ParentComponent } from "solid-js";
 
 import itemData from "../data/item";
+import furnitureData from "../data/furniture";
+
 import { MAX_INVENT } from "../utils/constants";
-import { InventItem } from "../data/types";
-import { GameContext } from "./game";
+import { IGameState, InventItem } from "../data/types";
+import { SetStoreFunction, Store } from "solid-js/store";
 
 export interface IInventoryContext {
   addInventory: (item: string, count?: number) => number;
@@ -11,47 +13,78 @@ export interface IInventoryContext {
   addStash: (item: string, count?: number) => number;
   removeStash: (item: string, count?: number) => number;
   inventory: Accessor<InventItem[]>;
+  stash: Accessor<InventItem[]>;
 }
 
 export const InventoryContext = createContext<IInventoryContext>();
 
-export const InventoryProvider: ParentComponent<{ inventory: Accessor<InventItem[]>, setInventory: Setter<InventItem[]> }> = (props) => {
-  const gameCtx = useContext(GameContext);
-
+export const InventoryProvider: ParentComponent<{
+  state: Store<IGameState>, setState: SetStoreFunction<IGameState>
+}> = (props) => {
   const addInventory = (name: string, toAdd = 1): number => {
-    const [newInvent, addedCount] = addToContainer(props.inventory(), name, toAdd);
+    const [newInvent, addedCount] = addToContainer(props.state.inventory, name, toAdd);
     if (addedCount > 0) {
-      props.setInventory([...newInvent]);
+      props.setState("inventory", newInvent);
     }
     return addedCount;
   };
 
+  const inventory = createMemo(() => props.state.inventory)
+  const stash = createMemo(() => props.state.stash)
+
+  createEffect((stashSize: number) => {
+    const stashCount = props.state.furniture.map((f) => furnitureData[f])
+      .filter((f) => f.type === "stash")
+      .reduce<number>((acc, f) => acc + (f.storageSize ?? 0), 0);
+    if (stashCount === stashSize) {
+      return stashCount;
+    }
+    const existingStash = props.state.stash.filter(Boolean);
+    if (stashCount < existingStash.length) {
+      throw new Error("Invalid stash, size too small for contents");
+    }
+    props.setState("stash", [...existingStash, ...(new Array(stashCount - existingStash.length).fill(null))]);
+    return stashCount;
+  }, 0)
+
   const removeInventory = (name: string, toRemove = 1): number => {
-    const [newInvent, removedCount] = removeFromContainer(props.inventory(), name, toRemove);
+    const [newInvent, removedCount] = removeFromContainer(props.state.inventory, name, toRemove);
     if (removedCount > 0) {
-      props.setInventory([...newInvent]);
+      props.setState("inventory", newInvent);
     }
     return removedCount;
   };
 
+  // always from the invent
   const addStash = (name: string, toAdd = 1): number => {
-    if (!gameCtx?.state.stash) {
+    const [newStash, addedCount] = addToContainer(props.state.stash, name, toAdd);
+    const [newInvent, removedCount] = removeFromContainer(props.state.inventory, name, toAdd);
+    if (removedCount !== addedCount) {
+      console.error(`Unable to move ${name} from invent to stash`);
       return 0;
     }
-    const [newStash, addedCount] = addToContainer(gameCtx.state.stash, name, toAdd);
     if (addedCount > 0) {
-      gameCtx.setState("stash", newStash);
+      batch(() => {
+        props.setState("inventory", newInvent);
+        props.setState("stash", newStash);
+      });
     }
     return addedCount;
   };
 
+  // always to the invent
   const removeStash = (name: string, toRemove = 1): number => {
-    if (!gameCtx?.state.stash) {
+    const [newStash, removedCount] = removeFromContainer(props.state.stash, name, toRemove);
+    const [newInvent, addedCount] = addToContainer(props.state.inventory, name, toRemove);
+    if (removedCount !== addedCount) {
+      console.error(`Unable to move ${name} from stash to invent`);
       return 0;
     }
-    const [newStash, removedCount] = removeFromContainer(gameCtx.state.stash, name, toRemove);
     if (removedCount > 0) {
-      gameCtx.setState("stash", newStash);
+      batch(() => {
+        props.setState("inventory", newInvent);
+        props.setState("stash", newStash);
+      });
     }
     return removedCount;
   };
@@ -95,7 +128,7 @@ export const InventoryProvider: ParentComponent<{ inventory: Accessor<InventItem
       );
     }
     if (remaining) {
-      newInvent = newInvent.map(
+      newInvent = newInvent.map<InventItem>(
         (inv) => {
           if (!remaining) {
             return inv;
@@ -104,7 +137,7 @@ export const InventoryProvider: ParentComponent<{ inventory: Accessor<InventItem
             const count = Math.min(remaining, item.maxStack ?? 1);
             remaining -= count;
             return {
-              ...item,
+              name: item.name,
               count
             };
           }
@@ -157,7 +190,8 @@ export const InventoryProvider: ParentComponent<{ inventory: Accessor<InventItem
   };
 
   const value: IInventoryContext = {
-    inventory: props.inventory,
+    inventory, stash,
+
     addInventory, removeInventory,
     addStash, removeStash
   };
