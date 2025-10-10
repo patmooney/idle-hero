@@ -76,14 +76,14 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
 
   const attackRate = createMemo<number>(() => {
     const equiped = equipment();
-    const maxAgility = 100;
-    const agility = Math.min(maxAgility, Math.max(1, props.player.stats?.agility ?? 0));
+    const maxDexterity = 100;
+    const dexterity = Math.min(maxDexterity, Math.max(1, props.player.stats?.dexterity ?? 0));
     const minAttackDelay = 1; // not possible to go faster than 4 attacks a second
 
-    // this means that with agility at 100 and a 100% delay reduction from items, the fastest is 4 attacks p/s
-    const maxAgilityEffect = BASE_ATTACK_DELAY / 5;
-    const bonusRatio = Math.sqrt(agility / maxAgility);
-    const statDelayReduce = maxAgilityEffect * bonusRatio;
+    // this means that with dexterity at 100 and a 100% delay reduction from items, the fastest is 4 attacks p/s
+    const maxDexterityEffect = BASE_ATTACK_DELAY / 5;
+    const bonusRatio = Math.sqrt(dexterity / maxDexterity);
+    const statDelayReduce = maxDexterityEffect * bonusRatio;
 
     const maxItemEffect = BASE_ATTACK_DELAY / 5;
     const itemRatio = Math.min(equiped.reduce<number>((acc, eq) => acc + (eq.stats?.attSpeed ?? 0), 0), 1)// in future will be a %, e.g. a helm of speed gives 10% reduced attack delay (0.1)
