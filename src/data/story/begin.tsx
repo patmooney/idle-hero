@@ -1,6 +1,8 @@
 import { IStory } from "../types";
 import { Speech } from "./format";
 
+import itemData from "../item";
+
 const story: IStory[] = [
   {
     name: "story_town_1",
@@ -64,11 +66,31 @@ const story: IStory[] = [
     name: "story_farmer_3",
     label: "Farmer",
     description: <Speech lines={[`Am *I* the keeper of the wheat?`, `... or is it the keeper of me?`]} />,
-
     type: "dialogue",
-    options: [
-      { label: "Silently leave", goto: "_back.2" }
-    ]
+    options: (gameCtx, inventCtx) => {
+      const cost = 200;
+      const showGift = !gameCtx.state.markers.includes("story_farmer_gift_1");
+      const isDisabled = inventCtx.inventory().reduce<number>((acc, i) => i?.name === "hay_1" ? acc + i?.count : acc, 0) < cost;
+      const action = () => {
+        const [kabab, campf] = ["recipe_worm_kabab_1", "recipe_camp_fire_1"].map((r) => itemData[r]);
+        if (inventCtx.removeInventory("hay_1", cost) === cost) {
+          inventCtx.addInventory("recipe_worm_kabab_1", 1);
+          inventCtx.addInventory("recipe_camp_fire_1");
+          gameCtx.setState("markers", [...gameCtx.state.markers, "story_farmer_gift_1"]);
+          gameCtx.onLog(
+            <>
+              The farmer reciprocates:
+              <span class="font-bold m-1">{/*@once*/kabab?.label}, {/*@once*/campf?.label}</span>
+            </>, "drop"
+          );
+
+        }
+      };
+      return [
+        ...(showGift ? [{ label: "A gift... (200 Hay)", action, isDisabled }] : []),
+        { label: "Silently leave", goto: "_back.2" }
+      ];
+    }
   },
   {
     name: "story_scarecrows_1",

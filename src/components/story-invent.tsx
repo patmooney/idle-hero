@@ -69,6 +69,16 @@ export const Story_Invent: Component = () => {
     }
   };
 
+  const canDrop = createMemo(() => {
+    if (!selectedItem()) {
+      return false;
+    }
+    if (selectedItem()?.item.category === "unique") {
+      return false;
+    }
+    return true;
+  });
+
   const onStash = (count: number) => {
     const item = selectedItem();
     if (!item) {
@@ -124,14 +134,16 @@ export const Story_Invent: Component = () => {
                   </div>
                 </div>
               </Show>
-              <div class="px-2 py-1 bg-red-900 border border-red-500 w-full flex flex-row justify-between items-center rounded">
-                <span class="font-bold text-xl text-black">Drop</span>
-                <div class="flex flex-row gap-4">
-                  <Button onClick={() => onRemove(1)}>One</Button>
-                  <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
-                  <Button onClick={() => onRemove(Infinity)}>All</Button>
+              <Show when={canDrop()}>
+                <div class="px-2 py-1 bg-red-900 border border-red-500 w-full flex flex-row justify-between items-center rounded">
+                  <span class="font-bold text-xl text-black">Drop</span>
+                  <div class="flex flex-row gap-4">
+                    <Button onClick={() => onRemove(1)}>One</Button>
+                    <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
+                    <Button onClick={() => onRemove(Infinity)}>All</Button>
+                  </div>
                 </div>
-              </div>
+              </Show>
             </div>
           </div>
         </div>

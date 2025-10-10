@@ -51,7 +51,7 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
     if (s.type !== "encounter" || !s.encounters?.length) {
       return;
     }
-    return s.encounters.sort((a, b) => a.chance - b.chance).find(
+    return s.encounters.filter((e) => !game?.state.blockedEncounters.includes(e.name)).sort((a, b) => a.chance - b.chance).find(
       (enc) => {
         return rand <= enc.chance;
       }

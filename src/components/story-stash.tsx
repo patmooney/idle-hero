@@ -50,6 +50,16 @@ export const Story_Stash: Component = () => {
     inventCtx?.removeStash(item.item.name, count)
   };
 
+  const canDrop = createMemo(() => {
+    if (!selectedItem()) {
+      return false;
+    }
+    if (selectedItem()?.item.category === "unique") {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <div class="h-full relative pb-2">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
@@ -73,14 +83,16 @@ export const Story_Stash: Component = () => {
                   <Button onClick={() => onStash(Infinity)}>All</Button>
                 </div>
               </div>
-              <div class="px-2 py-1 bg-red-900 border border-red-500 rounded w-full flex flex-row justify-between items-center mb-2">
-                <span class="font-bold text-xl text-black">Drop</span>
-                <div class="flex flex-row gap-4">
-                  <Button onClick={() => onRemove(1)}>One</Button>
-                  <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
-                  <Button onClick={() => onRemove(Infinity)}>All</Button>
+              <Show when={canDrop()}>
+                <div class="px-2 py-1 bg-red-900 border border-red-500 rounded w-full flex flex-row justify-between items-center mb-2">
+                  <span class="font-bold text-xl text-black">Drop</span>
+                  <div class="flex flex-row gap-4">
+                    <Button onClick={() => onRemove(1)}>One</Button>
+                    <Button onClick={() => onRemove(selectedItem()?.count ?? 1)}>Stack</Button>
+                    <Button onClick={() => onRemove(Infinity)}>All</Button>
+                  </div>
                 </div>
-              </div>
+              </Show>
             </div>
           </div>
         </div>

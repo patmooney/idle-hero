@@ -1,6 +1,6 @@
 import './App.css'
 
-import { Component, createMemo, createSignal, For, Match, Switch, useContext } from 'solid-js'
+import { Component, createMemo, createSignal, For, Match, Switch, useContext, DEV, Show } from 'solid-js'
 import { createStore } from 'solid-js/store';
 
 import { getLevel, getProgress } from './utils/levels';
@@ -19,10 +19,15 @@ import { Game, GameContext } from "./provider/game";
 import { StoryContext } from './provider/story';
 import { PlayerContext } from './provider/player';
 
+import { Debug } from "./debug";
+
 type ContextScreen = "story" | "invent" | "stats" | "skills" | "menu" | "stash";
 
 const App = () => (
-  <Game><Story /></Game>
+  <Game>
+    <Story />
+    <Show when={DEV}><Debug /></Show>
+  </Game>
 );
 
 const Story = () => {
@@ -41,7 +46,7 @@ const Story = () => {
   });
 
   return (
-    <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between">
+    <div class="w-dvw h-dvh lg:w-[360px] lg:h-[800px] flex flex-col justify-between relative">
       <div class="h-3/10 bg-gray-400">
         <div class="h-1/10">
           <Overview />

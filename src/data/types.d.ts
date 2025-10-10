@@ -12,14 +12,17 @@ export interface IEncounter {
     drops?: IDrop[];
     experience?: number;
     stats?: IStats;
-}
+    isUnique?: boolean; // i.e. can kill once (per run)  
+};
+
+export type StoryMarker = "story_farmer_gift_1";
 
 export type StoryType = "task" | "encounter" | "dialogue";
 export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing" | "woodcutting";
 export type ItemUtilityType = "axe" | "pickaxe";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
-export type CraftingType = "basic" | "weapon" | "armour";
-export type ItemCategory = "misc" | "food" | "resource" | "book";
+export type CraftingType = "basic" | "weapon" | "armour" | "food";
+export type ItemCategory = "misc" | "food" | "resource" | "book" | "unique";
 
 export type LearnType = "recipe" | "skill";
 export type ItemCount = { name: string, count: number };
@@ -149,6 +152,8 @@ export interface IGameState {
     furniture: string[];
     inventory: InventItem[];
     stash: InventItem[];
+    blockedEncounters: string[];
+    markers: StoryMarker[];
 }
 
 export type LogType = "bad" | "good" | "meta" | "drop" | "basic";

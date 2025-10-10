@@ -20,6 +20,16 @@ const items: IRecipe[] = [
     name: "recipe_hay_chest_1",
     label: "Recipe: Hay vest",
     craftableItem: "hay_chest_1"
+  },
+  {
+    name: "recipe_worm_kabab_1",
+    label: "Recipe: Worm kabab",
+    craftableItem: "food_worm_kabab_1"
+  },
+  {
+    name: "recipe_camp_fire_1",
+    label: "Recipe: Camp fire",
+    craftableFurniture: "furniture_cook_basic_1"
   }
 ].map(
   (item) => ({

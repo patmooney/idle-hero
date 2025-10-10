@@ -1,5 +1,5 @@
 import { Accessor, batch, createContext, createSignal, JSXElement, onMount, ParentComponent, Setter } from "solid-js";
-import { IGameState, ILogItem, IPlayer, LogType } from "../data/types";
+import type { IGameState, ILogItem, IPlayer, LogType } from "../data/types";
 import { unstore, store } from "../utils/store";
 import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
 import { DEFAULT_STORY, MAX_CATCHUP_MS, MAX_INVENT, MIN_TICK_TIME_MS, TICKS_IN_YEAR } from "../utils/constants";
@@ -50,7 +50,9 @@ const defaultState: IGameState = {
   prohibitedItems: [],
   stash: new Array(2).fill(null),
   furniture: [],
-  inventory: new Array(MAX_INVENT).fill(null)
+  inventory: new Array(MAX_INVENT).fill(null),
+  blockedEncounters: [],
+  markers: [],
 }
 
 export const GameContext = createContext<IGameContext>();
@@ -136,6 +138,10 @@ export const Game: ParentComponent = (props) => {
   const loadState = () => {
     const state = unstore<IState>(STATE_STORE_KEY);
     if (state) {
+      /*backward compatibility*/
+      state.state.blockedEncounters = state.state.blockedEncounters ?? [];
+      state.state.markers = state.state.markers ?? [];
+
       batch(() => {
         setStory(state.story);
         setPlayer(state.player);

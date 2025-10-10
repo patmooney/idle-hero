@@ -4,35 +4,38 @@ import solid from 'vite-plugin-solid'
 import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: '',
-  plugins: [tailwindcss(), solid(), VitePWA({
-    registerType: 'prompt',
-    injectRegister: false,
+export default defineConfig(({ mode }) => ({
+    base: '',
+    plugins: [tailwindcss(), solid(), VitePWA({
+        registerType: 'prompt',
+        injectRegister: false,
 
-    pwaAssets: {
-      disabled: false,
-      config: true,
-    },
+        pwaAssets: {
+            disabled: false,
+            config: true,
+        },
 
-    manifest: {
-      name: 'idle-hero',
-      short_name: 'idle-hero',
-      description: 'idle-hero',
-      theme_color: '#8c8c8c',
-    },
+        manifest: {
+            name: 'idle-hero',
+            short_name: 'idle-hero',
+            description: 'idle-hero',
+            theme_color: '#8c8c8c',
+        },
 
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-      cleanupOutdatedCaches: true,
-      clientsClaim: true,
-    },
+        workbox: {
+            globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+            cleanupOutdatedCaches: true,
+            clientsClaim: true,
+        },
 
-    devOptions: {
-      enabled: false,
-      navigateFallback: 'index.html',
-      suppressWarnings: true,
-      type: 'module',
-    },
-  })],
-})
+        devOptions: {
+            enabled: false,
+            navigateFallback: 'index.html',
+            suppressWarnings: true,
+            type: 'module',
+        },
+    })],
+    resolve: {
+        conditions: [ ...(mode === "development" ? ["development"] : []) ]
+    }
+}));

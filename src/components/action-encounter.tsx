@@ -98,6 +98,9 @@ export const Action_Encounter: Component = () => {
           </>, "good"
         );
       }
+      if (enc.isUnique) {
+        ctx?.setState("blockedEncounters", [...ctx.state.blockedEncounters, enc.name]);
+      }
       setCount(count() + 1);
       setEncounter(undefined);
       if (enc.experience) {
