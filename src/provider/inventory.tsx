@@ -149,10 +149,13 @@ export const InventoryProvider: ParentComponent<{
   };
 
   const removeFromContainer = (container: InventItem[], name: string, toRemove = 1): [InventItem[], number] => {
+    if (toRemove === Infinity) {
+      toRemove = container.reduce<number>((acc, i) => i?.name === name ? acc + i.count : acc, 0);
+    }
+
     if (!toRemove) {
       return [container, 0];
     }
-
     if (!itemData[name]) {
       console.warn("Invalid or not found name", name);
       return [container, 0];

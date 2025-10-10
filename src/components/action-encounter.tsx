@@ -106,7 +106,8 @@ export const Action_Encounter: Component = () => {
       if (enc.experience) {
         playerCtx?.onAddStat("experience", enc.experience);
       }
-      const drops = storyCtx?.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems?.includes(drop)).filter(
+      const allDrops = storyCtx?.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems?.includes(drop));
+      const drops = allDrops?.filter(
         (drop) => !!inventCtx?.addInventory(drop)
       );
       if (drops?.length && shouldLog) {
@@ -116,6 +117,14 @@ export const Action_Encounter: Component = () => {
             <span class="font-bold m-1">{/*@once*/drops?.map((d) => itemData[d]?.label).join(", ")}</span>
           </>, "drop"
         );
+      }
+      if (!drops?.length && allDrops?.length) {
+        // oh dear, bag full
+        ctx?.onLog(
+          <>You retreat with a full bag</>, "meta"
+        );
+        ctx?.onNavigate("_back");
+        return;
       }
       if (story.noRepeat) {
         return;

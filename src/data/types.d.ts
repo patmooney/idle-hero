@@ -77,7 +77,7 @@ export interface IDrop {
 export interface IMasteryBonus {
     level: number;
     stats: IStats;
-    dropModifiers?: Idrop[];
+    dropModifiers?: IDrop[];
 }
 
 export interface IMastery {
@@ -122,6 +122,7 @@ export interface IStats {
     dexterity?: number;
     intelligence?: number;
     charisma?: number;
+    constitution?: number;
     attSpeed?: number;
     attMin?: number;
     attMax?: number;
@@ -154,6 +155,7 @@ export interface IGameState {
     stash: InventItem[];
     blockedEncounters: string[];
     markers: StoryMarker[];
+    points?: number;
 }
 
 export type LogType = "bad" | "good" | "meta" | "drop" | "basic";

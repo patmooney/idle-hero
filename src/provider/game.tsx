@@ -80,9 +80,6 @@ export const Game: ParentComponent = (props) => {
         return;
       }
       advanceTick();
-      activities().forEach(
-        ([_, cb]) => cb()
-      )
     }, MIN_TICK_TIME_MS);
   });
 

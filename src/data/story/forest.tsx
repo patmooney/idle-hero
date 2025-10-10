@@ -75,7 +75,7 @@ const forest: IStory[] = [
     utilityType: "axe",
     items: [
       { name: "wood_log_1", chance: 1 },
-      { name: "food_acorn_1", chance: 0.1 },
+      { name: "food_acorn_1", chance: 3 },
     ]
   },
   {

@@ -4,8 +4,10 @@ import { cumulateBonus } from "../utils/mastery";
 
 import itemData from "../data/item";
 
-import { createContext, Accessor, ParentComponent, createMemo } from "solid-js";
+import { createContext, Accessor, ParentComponent, createMemo, useContext } from "solid-js";
 import { SetStoreFunction, Store } from "solid-js/store";
+import { getLevel } from "../utils/levels";
+import {GameContext} from "./game";
 
 export interface IPlayerContext {
   attackDamage: Accessor<[number, number]>;
@@ -26,6 +28,8 @@ export interface IPlayerContext {
 export const PlayerContext = createContext<IPlayerContext>();
 
 export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer: SetStoreFunction<IPlayer> }> = (props) => {
+  const gameCtx = useContext(GameContext);
+
   const recipes = createMemo(() => {
     return props.player.recipes?.map(
       (name) => itemData[name] as IRecipe
@@ -98,7 +102,14 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
   });
 
   const onAddStat = (stat: keyof IPlayerStats, value = 1) => {
-    const newVal = (props.player.stats[stat] ?? 0) + value;
+    const oldVal = props.player.stats[stat] ?? 0;
+    const newVal = oldVal + value;
+
+    if (stat === "experience" && getLevel(newVal) > getLevel(oldVal)) {
+      gameCtx?.setState("points", (gameCtx.state.points ?? 0) + 1);
+      gameCtx?.onLog("You have levels up! +1 attr. points", "meta");
+    }
+
     props.setPlayer("stats", stat, newVal);
   };
 

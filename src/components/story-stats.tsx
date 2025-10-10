@@ -1,13 +1,16 @@
-import { Component, createMemo, createSignal, For, JSXElement, Match, Switch, useContext } from "solid-js";
+import { batch, Component, createMemo, createSignal, For, JSXElement, Match, Show, Switch, useContext } from "solid-js";
 import { BASE_ATTACK_DELAY, MIN_TICK_TIME_MS } from "../utils/constants";
-import type { EquipSlotType, IItemEquipable } from "../data/types";
+import type { EquipSlotType, IItemEquipable, IStats } from "../data/types";
 import { PlayerContext } from "../provider/player";
 import { InventoryContext } from "../provider/inventory";
+import { GameContext } from "../provider/game";
 
 export const Story_Stats: Component = () => {
-  const [view, setView] = createSignal<"equip" | "stats">("stats");
+  const [view, setView] = createSignal<"equip" | "stats" | "attributes">("stats");
+
   const playerCtx = useContext(PlayerContext);
   const inventCtx = useContext(InventoryContext);
+  const gameCtx = useContext(GameContext);
 
   const stats = createMemo<{ label: string, value: number | string | JSXElement }[]>(() => {
     const damage = playerCtx?.attackDamage();
@@ -24,6 +27,17 @@ export const Story_Stats: Component = () => {
       { label: "Phys. res", value: playerCtx?.player.stats.physRes ?? 0 },
       { label: "Mag. res", value: playerCtx?.player.stats.magRes ?? 0 },
     ];
+  });
+
+  const attributes = createMemo<{ label: string, value: number | string | JSXElement, name: keyof IStats }[]>(() => {
+    return [
+      { label: "Strength", value: playerCtx?.player.stats.strength ?? 0, name: "strength" },
+      { label: "Agility", value: playerCtx?.player.stats.agility ?? 0, name: "agility" },
+      { label: "Dexterity", value: playerCtx?.player.stats.dexterity ?? 0, name: "dexterity" },
+      { label: "Intelligence", value: playerCtx?.player.stats.intelligence ?? 0, name: "intelligence" },
+      { label: "Charisma", value: playerCtx?.player.stats.charisma ?? 0, name: "charisma" },
+      { label: "Constitution", value: playerCtx?.player.stats.constitution ?? 0, name: "constitution" },
+    ]
   });
 
   type EquipItem = {
@@ -69,6 +83,16 @@ export const Story_Stats: Component = () => {
     ];
   });
 
+  const onPoint = (stat: keyof IStats) => {
+    const available = (gameCtx?.state.points ?? 0);
+    if (available > 0) {
+      batch(() => {
+        gameCtx?.setState("points", available - 1);
+        playerCtx?.onAddStat(stat, 1);
+      })
+    }
+  };
+
   return (
     <div class="flex flex-col h-full">
       <div class="h-7/8 p-2">
@@ -78,6 +102,19 @@ export const Story_Stats: Component = () => {
               (stat) => <div class="flex flex-row justify-between border-gray-700" classList={{ "border-b": !!stat.label }}>
                 <div>{stat.label}</div>
                 <div>{stat.value}</div>
+              </div>
+            }</For>
+          </Match>
+          <Match when={view() === "attributes"}>
+            <For each={attributes()}>{
+              (stat) => <div class="flex flex-row justify-between border-gray-700 p-2 items-center" classList={{ "border-b": !!stat.label }}>
+                <div>{stat.label}</div>
+                <div class="flex flex-row gap-2 items-center">
+                  {stat.value}
+                  <Show when={!!gameCtx?.state.points}>
+                    <button class="h-8" onClick={() => onPoint(stat.name)}>+</button>
+                  </Show>
+                </div>
               </div>
             }</For>
           </Match>
@@ -96,6 +133,7 @@ export const Story_Stats: Component = () => {
       </div>
       <div class="h-1/8 flex flex-row justify-between gap-2 p-2">
         <button classList={{ "selected": view() === "equip"}} onClick={() => setView("equip")}>Equip</button>
+        <button classList={{ "selected": view() === "attributes"}} onClick={() => setView("attributes")}>Attr.</button>
         <button classList={{ "selected": view() === "stats"}} onClick={() => setView("stats")}>Stats</button>
       </div>
     </div>

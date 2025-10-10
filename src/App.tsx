@@ -1,6 +1,6 @@
 import './App.css'
 
-import { Component, createMemo, createSignal, For, Match, Switch, useContext, DEV, Show } from 'solid-js'
+import { Component, createMemo, createSignal, For, Match, Switch, useContext, DEV, Show, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store';
 
 import { getLevel, getProgress } from './utils/levels';
@@ -56,7 +56,7 @@ const Story = () => {
         </div>
       </div>
       <div classList={{ "h-1/10": !expandLog(), "h-4/10": expandLog() }}>
-        <Log />
+        <Log view={currentView()} />
       </div>
       <div class="bg-gray-800" classList={{ "h-2/10": expandLog(), "h-5/10": !expandLog() }}>
         <Switch fallback={<div>Unknown view</div>}>
@@ -118,9 +118,20 @@ export const ActionView: Component = () => {
   );
 };
 
-export const Log: Component = () => {
+export const Log: Component<{ view: ContextScreen }> = (props) => {
   const [logRef, setLogRef] = createSignal<HTMLDivElement>();
   const game = useContext(GameContext);
+
+  createEffect((view: ContextScreen) => {
+    const c = logRef();
+    if (!c) {
+      return view;
+    }
+    if (view !== props.view && props.view !== "story") {
+      setTimeout(() => c.scrollTo(0, c.scrollHeight ?? 0));
+    }
+    return view;
+  }, props.view)
 
   const [show, setShow] = createStore<Record<LogType, boolean>>({
     good: true,

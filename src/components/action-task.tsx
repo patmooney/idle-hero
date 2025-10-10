@@ -86,10 +86,13 @@ export const Action_Task: Component = () => {
     if (story.masteryType) {
       playerCtx?.onAddMastery(story.masteryType, story.experience ?? 0);
     }
-    const drops = storyCtx.getItems()?.
-      filter((drop) => !gameCtx?.state.prohibitedItems?.includes(drop)).filter(
+
+    const allDrops = storyCtx.getItems()?.
+        filter((drop) => !gameCtx?.state.prohibitedItems?.includes(drop));
+    const drops = allDrops?.filter(
         (drop) => !!inventCtx?.addInventory(drop)
       );
+
     if (drops?.length) {
       const labels = drops.map((d) => itemData[d]?.label ?? "Unknown");
       gameCtx?.onLog(
@@ -99,9 +102,20 @@ export const Action_Task: Component = () => {
         </>, "drop"
       );
     }
+
     if (story.noRepeat) {
       return story.onComplete?.(gameCtx!, inventCtx!, playerCtx!, storyCtx!) ?? gameCtx?.onNavigate("_back");
     }
+
+    if (!drops?.length && allDrops?.length) {
+      // oh dear, bag full
+      gameCtx?.onLog(
+        <>You retreat with a full bag</>, "meta"
+      );
+      gameCtx?.onNavigate("_back");
+      return;
+    }
+
     setWait(story.cooldown ?? 0);
     gameCtx?.startActivity(`${name()}_wait`, doWait);
   }

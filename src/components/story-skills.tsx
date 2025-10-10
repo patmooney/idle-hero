@@ -3,6 +3,7 @@ import { MasteryType } from "../data/types";
 import { getLevel, getProgress, masteryXP } from "../utils/levels";
 import { Progress } from "./ticker";
 
+import itemData from "../data/item";
 import masteryData from "../data/mastery";
 import { PlayerContext } from "../provider/player";
 
@@ -13,7 +14,7 @@ export const Story_Skills: Component = () => {
   const [view, setView] = createSignal<views>("mastery");
   const playerCtx = useContext(PlayerContext);
 
-  const [selected, setSelected] = createSignal<masteryDisplay>();
+  const [selected, setSelected] = createSignal<MasteryType>();
 
   const mastery = createMemo<masteryDisplay[]>(() => {
     return Object.entries(playerCtx?.player.mastery ?? {}).map(
@@ -24,13 +25,23 @@ export const Story_Skills: Component = () => {
     ) ?? [];
   });
 
+  const selectedMastery = createMemo(() => {
+    const name = selected();
+    if (!name) {
+      return;
+    }
+    const exp = playerCtx?.player.mastery[name] ?? 0;
+    const m = masteryData[name];
+    return { label: m?.label ?? "", progress: (getProgress(exp, masteryXP) * 100), level: getLevel(exp, masteryXP), name };
+  });
+
   const onChangeView = (name: views) => {
     setSelected(undefined);
     setView(name);
   }
 
   const masteryDetails = createMemo(() => {
-    const name = selected()?.name;
+    const name = selected();
     if (name === undefined) {
       return;
     }
@@ -39,7 +50,7 @@ export const Story_Skills: Component = () => {
     return masteryData[name]?.bonus.slice(0, (indexOf ?? 0)+2).map(
       (b, idx, arr) => ({
         level: b.level,
-        stats: Object.entries(b.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join(""),
+        stats: (b.dropModifiers ?? []).map((e) => `[${itemData[e.name]?.label}: +${e.chance}]`) + Object.entries(b.stats ?? {}).filter(([_, v]) => Boolean(v)).map(([k, v]) => `[${k}: ${v}]`).join(""),
         isLast: idx === arr.length - 1
       })
     );
@@ -53,7 +64,7 @@ export const Story_Skills: Component = () => {
           <Match when={view() === "mastery" && !selected()}>
             <For each={mastery()}>{
               (m) => (
-                <div class="flex flex-row justify-between items-center cursor-pointer" onClick={() => setSelected(m)}>
+                <div class="flex flex-row justify-between items-center cursor-pointer" onClick={() => setSelected(m.name)}>
                   <div>{m.label}</div>
                   <div class="h-4 w-32">
                     <Progress label={`${m.level}`} type="yellow" max={100} value={m.progress} showPc></Progress>
@@ -64,9 +75,9 @@ export const Story_Skills: Component = () => {
           </Match>
           <Match when={view() === "mastery" && selected()}>
             <div class="flex flex-col justify-between items-center cursor-pointer">
-              <div class="text-xl font-bold">{selected()?.label}</div>
+              <div class="text-xl font-bold">{selectedMastery()?.label}</div>
               <div class="h-4 w-32">
-                <Progress label={`${selected()!.level}`} type="yellow" max={100} value={selected()!.progress} showPc></Progress>
+                <Progress label={`${selectedMastery()!.level}`} type="yellow" max={100} value={selectedMastery()!.progress} showPc></Progress>
               </div>
             </div>
 
