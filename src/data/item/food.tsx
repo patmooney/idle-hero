@@ -20,6 +20,7 @@ const food: ((IItem | IItemCraftable) & { hp: number })[] = [
     label: "Worm... kabab (+4hp)",
     useVerb: "Eat",
     maxStack: 10,
+    craftType: "food",
     hp: 4,
     craftComplexity: 1,
     ingredients: [{ name: "food_worm_1", count: 10 }]

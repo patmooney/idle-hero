@@ -92,6 +92,35 @@ const story: IStory[] = [
           subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing?.name].label} (${ing?.count})`).join(" - ")
         })) ?? [];
     }
+  },
+  {
+    name: "story_craft_food_1",
+    label: "Baic cooking",
+    description: "A very simple cooking station",
+    type: "dialogue",
+    options: (_, inventCtx, playerCtx, storyCtx) => {
+      if (!playerCtx || !inventCtx) {
+        return [];
+      }
+      const basicRecipes = playerCtx?.recipes()?.filter((r) => !!r.craftableItem)
+        .map((r) => itemData[r.craftableItem!])
+        .filter((i) => (i as IItemCraftable).craftType === "food" && (i as IItemCraftable).craftComplexity === 1);
+      return basicRecipes
+        .map((i) => ({
+          label: i.label,
+          action: () => {
+            storyCtx?.onTask({
+              noRepeat: true,
+              label: `Cooking`,
+              description: i.label,
+              duration: 100,
+              onComplete: () => craftItem(inventCtx!, i as IItemCraftable)
+            });
+          },
+          isDisabled: !hasIngredients(inventCtx, i as IItemCraftable),
+          subtext: (i as IItemCraftable).ingredients?.map((ing) => `${itemData[ing?.name].label} (${ing?.count})`).join(" - ")
+        })) ?? [];
+    }
   }
 ];
 
