@@ -9,3 +9,5 @@ export const MAX_CATCHUP_MS = 12 * 60 * 60 * 1000;
 export const MIN_STASH = 5;
 export const TICKS_IN_YEAR = (60 * 60 * 24 * 10) / 85;
 export const DEFAULT_STORY = "story_town_1";
+export const BASE_MAX_HEALTH = 10;
+export const MAX_ATTR_LEVEL = 100;

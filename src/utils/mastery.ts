@@ -3,11 +3,14 @@ import { getLevel, masteryXP } from "./levels";
 import masteryData from "../data/mastery";
 
 export const cumulateBonus = (mastery: MasteryType, exp: number): IStats => {
+    return cumulateBonusByLevel(mastery, getLevel(exp, masteryXP));
+}
+
+export const cumulateBonusByLevel = (mastery: MasteryType, level: number): IStats => {
     const data = masteryData[mastery];
     if (!data) {
         return {};
     }
-    const level = getLevel(exp, masteryXP);
     const stats = data.bonus.filter(
         (bonus) => bonus.level <= level
     );

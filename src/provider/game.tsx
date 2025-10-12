@@ -1,8 +1,8 @@
-import { Accessor, batch, createContext, createSignal, JSXElement, onMount, ParentComponent, Setter } from "solid-js";
+import { Accessor, batch, createContext, createSignal, JSXElement, onMount, ParentComponent, Setter, Show } from "solid-js";
 import type { IGameState, ILogItem, IPlayer, LogType } from "../data/types";
 import { unstore, store } from "../utils/store";
 import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
-import { DEFAULT_STORY, MAX_CATCHUP_MS, MAX_INVENT, MIN_TICK_TIME_MS, TICKS_IN_YEAR } from "../utils/constants";
+import { BASE_MAX_HEALTH, DEFAULT_STORY, MAX_CATCHUP_MS, MAX_INVENT, MIN_TICK_TIME_MS, TICKS_IN_YEAR } from "../utils/constants";
 import { InventoryProvider } from "./inventory";
 import { PlayerProvider } from "./player";
 import { StoryProvider } from "./story";
@@ -36,8 +36,8 @@ export interface IState {
 
 const defaultPlayer: IPlayer = {
   stats: {
-    health: 10,
-    maxHealth: 10,
+    health: BASE_MAX_HEALTH,
+    maxHealth: BASE_MAX_HEALTH,
     gold: 0,
     experience: 0
   },
@@ -61,10 +61,12 @@ const FREEZE_TIME_STORE_KEY = "freeze_time";
 const STATE_STORE_KEY = "state";
 
 export const Game: ParentComponent = (props) => {
+  const [reset, setReset] = createSignal<boolean>(false);
+
   const [log, setLog] = createSignal<ILogItem[]>([]);
   const [story, setStory] = createSignal<string>(DEFAULT_STORY);
-  const [player, setPlayer] = createStore<IPlayer>(defaultPlayer);
-  const [state, setState] = createStore<IGameState>(defaultState);
+  const [player, setPlayer] = createStore<IPlayer>({ ...defaultPlayer });
+  const [state, setState] = createStore<IGameState>({ ...defaultState });
   const [nav, setNav] = createSignal<string[]>([DEFAULT_STORY]);
 
   const [ticks, setTicks] = createSignal<number>(0);
@@ -158,13 +160,16 @@ export const Game: ParentComponent = (props) => {
   };
 
   const onClearState = () => {
+    setReset(true);
     batch(() => {
-      setPlayer(defaultPlayer);
-      setState(defaultState);
+      setPlayer({ ...defaultPlayer });
+      setState({ ...defaultState });
       setTicks(0);
       onNavigate(DEFAULT_STORY);
+      setLog([]);
     });
     saveState();
+    setReset(false);
   };
 
   (window as any).cs = onClearState;
@@ -248,14 +253,16 @@ export const Game: ParentComponent = (props) => {
   };
 
   return (
-    <GameContext.Provider value={value}>
-      <InventoryProvider state={state} setState={setState}>
-        <PlayerProvider player={player} setPlayer={setPlayer}>
-          <StoryProvider story={story} setStory={setStory}>
-            {props.children}
-          </StoryProvider>
-        </PlayerProvider>
-      </InventoryProvider>
-    </GameContext.Provider>
+    <Show when={!reset()}>
+      <GameContext.Provider value={value}>
+        <InventoryProvider state={state} setState={setState}>
+          <PlayerProvider player={player} setPlayer={setPlayer}>
+            <StoryProvider story={story} setStory={setStory}>
+              {props.children}
+            </StoryProvider>
+          </PlayerProvider>
+        </InventoryProvider>
+      </GameContext.Provider>
+    </Show>
   );
 };

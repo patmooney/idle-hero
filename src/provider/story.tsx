@@ -13,7 +13,9 @@ export interface IStoryContext {
   getDamage: (enc: IEncounter) => number | undefined;
   getDrops: (enc: IEncounter) => string[] | undefined;
   getItems: (drops?: IDrop[]) => string[] | undefined;
+  getGold: (range?: [number, number]) => number | undefined;
   onTask: (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => void;
+  onStory: (story: IStory) => void;
 }
 
 export const StoryContext = createContext<IStoryContext>();
@@ -46,6 +48,9 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
         drops: s.items
       };
       return taskEncounter;
+    }
+    if (typeof s.encounters === "function") {
+      return s.encounters();
     }
     const rand = Math.random();
     if (s.type !== "encounter" || !s.encounters?.length) {
@@ -102,6 +107,14 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
     ).filter(Boolean) as string[];
   };
 
+  const getGold = (range?: [number, number]): number | undefined => {
+    if (!range) {
+      return;
+    }
+    const gold = range[0] + Math.round(Math.random() * (range[1] - range[0]));
+    return gold || undefined;
+  };
+
   const onTask = (opts: Pick<IStory, "label" | "description" | "noRepeat" | "duration" | "onComplete">) => {
     game?.setNav([...(game?.nav() ?? []), "task"]);
     props.setStory("task");
@@ -115,8 +128,16 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
     );
   };
 
+  const onStory = (story: IStory) => {
+    console.log({ story });
+    game?.setNav([...(game?.nav() ?? []), story.name]);
+    props.setStory(story.name);
+    setStory(story);
+  };
+
+
   const value: IStoryContext = {
-    story, getEncounter, getDamage, getDrops, getItems, onTask
+    story, getEncounter, getDamage, getDrops, getItems, onTask, getGold, onStory
   };
 
   return <StoryContext.Provider value={value}>{props.children}</StoryContext.Provider>

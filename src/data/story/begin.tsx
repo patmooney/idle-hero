@@ -2,6 +2,7 @@ import { IStory } from "../types";
 import { Speech } from "./format";
 
 import itemData from "../item";
+import {generateStory} from "./generated";
 
 const story: IStory[] = [
   {
@@ -14,6 +15,7 @@ const story: IStory[] = [
       { label: "Leave the town", goto: "story_forest_1" },
       { label: "Merchants", goto: "story_town_merchants_1" },
       { label: "Home", goto: "story_home_1" },
+      { label: "Generated", action: (_1, _2, _3, storyCtx) => storyCtx.onStory(generateStory(0)) }
     ]
   },
   {

@@ -12,13 +12,14 @@ export interface IEncounter {
     drops?: IDrop[];
     experience?: number;
     stats?: IStats;
-    isUnique?: boolean; // i.e. can kill once (per run)  
+    isUnique?: boolean; // i.e. can kill once (per run)
+    gold?: [number, number];
 };
 
-export type StoryMarker = "story_farmer_gift_1";
+export type StoryMarker = "story_farmer_gift_1" | "story_forest_3" | "generated_level_1" | "generated_level_2" | "generated_level_3" | "generated_level_4";
 
 export type StoryType = "task" | "encounter" | "dialogue";
-export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing" | "woodcutting";
+export type MasteryType = "unarmed" | "sword" | "axe" | "pickaxe" | "battleaxe" | "scythe" | "spear" | "flail" | "mace" | "staff" | "alchemy" | "smithing" | "woodcutting" | "crafting" | "cooking";
 export type ItemUtilityType = "axe" | "pickaxe";
 export type EquipSlotType = "head" | "shoulder" | "chest" | "hand" | "leg" | "foot" | "weapon" | "offhand";
 export type CraftingType = "basic" | "weapon" | "armour" | "food";
@@ -102,7 +103,7 @@ export interface IStory {
     // dialogue
     options?: IOption[] | ((gameCtx: IGameContext, inventCtx: IInventoryContext, playerCtx: IPlayerContext, storyCtx: IStoryContext) => IOption[]);
     // encounter
-    encounters?: IEncounter[];
+    encounters?: IEncounter[] | (() => IEncounter);
     cooldown?: number;
     limit?: number;
     // task

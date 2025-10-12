@@ -55,11 +55,12 @@ const forest: IStory[] = [
     name: "story_forest_1",
     label: "Forest border",
     description: "The canopy casts a shadow. Sounds, eyes ... movement",
-    options: (_, _1, playerCtx): IOption[] => {
+    options: (gameCtx, _1, playerCtx): IOption[] => {
       const hasAxe = !!playerCtx?.equipment().find((eq) => eq.equipSlot === "weapon" && eq.utilityType === "axe");
       return [
         { label: "Chop wood", goto: "task_chop_wood_1", isDisabled: !hasAxe },
         { label: <span class="text-red-500">Venture deeper</span>, goto: "story_forest_2" },
+        ...(gameCtx.state.markers.includes("story_forest_3") ? [{ label: <span class="text-red-500">Hunt</span>, goto: "story_forest_4" }] : [])
       ];
     }
   },
@@ -83,7 +84,7 @@ const forest: IStory[] = [
     label: "Deep forest",
     description: "Creatures block your path...",
     type: "encounter",
-    limit: 5,
+    limit: 50,
     onComplete: (gameCtx) => {
       gameCtx?.onNavigate("story_forest_3");
     },

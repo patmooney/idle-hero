@@ -1,13 +1,13 @@
 import { IItemEquipable, IPlayer, IPlayerStats, IRecipe, IStats, MasteryType } from "../data/types";
-import { BASE_ATTACK_DELAY } from "../utils/constants";
-import { cumulateBonus } from "../utils/mastery";
+import { BASE_ATTACK_DELAY, BASE_MAX_HEALTH, MAX_ATTR_LEVEL } from "../utils/constants";
+import { cumulateBonusByLevel } from "../utils/mastery";
 
 import itemData from "../data/item";
 
-import { createContext, Accessor, ParentComponent, createMemo, useContext } from "solid-js";
-import { SetStoreFunction, Store } from "solid-js/store";
-import { getLevel } from "../utils/levels";
-import {GameContext} from "./game";
+import { createContext, Accessor, ParentComponent, createMemo, useContext, batch, onMount } from "solid-js";
+import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
+import { getLevel, masteryXP } from "../utils/levels";
+import { GameContext } from "./game";
 
 export interface IPlayerContext {
   attackDamage: Accessor<[number, number]>;
@@ -15,6 +15,7 @@ export interface IPlayerContext {
   equipment: Accessor<IItemEquipable[]>;
   player: Store<IPlayer>;
   recipes: Accessor<IRecipe[]>;
+  stats: Accessor<IPlayerStats>;
 
   onEquip: (item: IItemEquipable) => boolean;
   onUnequip: (item: IItemEquipable) => boolean;
@@ -29,6 +30,23 @@ export const PlayerContext = createContext<IPlayerContext>();
 
 export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer: SetStoreFunction<IPlayer> }> = (props) => {
   const gameCtx = useContext(GameContext);
+  const [masteryLevels, setMasteryLevels] = createStore<{ [key in MasteryType]: number }>({
+    unarmed: 0,
+    sword: 0,
+    axe: 0,
+    pickaxe: 0,
+    battleaxe: 0,
+    scythe: 0,
+    spear: 0,
+    flail: 0,
+    mace: 0,
+    staff: 0,
+    alchemy: 0,
+    smithing: 0,
+    crafting: 0,
+    woodcutting: 0,
+    cooking: 0
+  });
 
   const recipes = createMemo(() => {
     return props.player.recipes?.map(
@@ -43,6 +61,18 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
     );
   }
 
+  onMount(() => {
+    const mL = unwrap(masteryLevels);
+    const levels = Object.entries(mL).reduce<{ [key in MasteryType]: number }>(
+      (acc, [k]) => {
+        const exp = props.player.mastery[k as MasteryType];
+        acc[k as MasteryType] = getLevel(exp as number, masteryXP);
+        return acc;
+      }, mL
+    );
+    setMasteryLevels(levels);
+  });
+
   const equipment = createMemo(() => {
     return props.player.equipment?.map(
       (name) => itemData[name] as IItemEquipable
@@ -54,7 +84,7 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
   });
 
   const getMasteryPerk = (mastery: MasteryType) => {
-      return cumulateBonus(mastery, props.player.mastery?.[mastery] ?? 0);
+      return cumulateBonusByLevel(mastery, masteryLevels[mastery]);
   };
 
   const attackDamage = createMemo<[number, number]>(() => {
@@ -82,7 +112,7 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
 
     // this means that with dexterity at 100 and a 100% delay reduction from items, the fastest is 4 attacks p/s
     const maxDexterityEffect = BASE_ATTACK_DELAY / 5;
-    const bonusRatio = Math.sqrt(dexterity / maxDexterity);
+    const bonusRatio = dexterity / maxDexterity;
     const statDelayReduce = maxDexterityEffect * bonusRatio;
 
     const maxItemEffect = BASE_ATTACK_DELAY / 5;
@@ -95,7 +125,8 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
     const masteryDelayReduce = (perk.attSpeed ?? 0) * maxMasteryEffect;
 
     const maxCombinedEffect = (BASE_ATTACK_DELAY / 2.5) - 1;
-    const combinedDelayReduce = maxCombinedEffect * ((bonusRatio + itemRatio + (perk.attSpeed ?? 0)) / 3);
+    const combRat = (bonusRatio * 0.33) + (itemRatio * 0.33) + ((perk.attSpeed ?? 0) * 0.33) + 0.01;
+    const combinedDelayReduce = maxCombinedEffect * combRat;
 
     const rate = Math.max(BASE_ATTACK_DELAY - statDelayReduce - itemDelayReduce - combinedDelayReduce - masteryDelayReduce, minAttackDelay);
     return rate;
@@ -115,8 +146,36 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
 
   const onAddMastery = (mastery: MasteryType, value = 1) => {
     const newVal = (props.player.mastery[mastery] ?? 0) + value;
-    props.setPlayer("mastery", mastery, newVal);
+    const newLevel = getLevel(newVal, masteryXP);
+    batch(() => {
+      if (newLevel !== masteryLevels[mastery]) {
+        setMasteryLevels(mastery, newLevel);
+      }
+      props.setPlayer("mastery", mastery, newVal);
+    });
   };
+
+  const itemBonus = (stat: keyof IStats, max: number = Infinity) =>
+    Math.min(equipment().reduce<number>((acc, eq) => acc + (eq.stats?.[stat] ?? 0), 0), max);
+
+  const stats = createMemo<IPlayerStats>(() => {
+    const stats: IPlayerStats = {
+      ...props.player.stats
+    };
+
+    const con = props.player.stats.constitution;
+    const baseMaxHealth = props.player.stats.maxHealth ?? BASE_MAX_HEALTH;
+    const [aMin, aMax] = attackDamage();
+
+    stats.maxHealth = itemBonus("maxHealth") + (con ? Math.round(baseMaxHealth * (1 + (con / MAX_ATTR_LEVEL))) : baseMaxHealth);
+    stats.attSpeed = attackRate();
+    stats.attMin = aMin;
+    stats.attMax = aMax;
+    stats.magRes = itemBonus("magRes");
+    stats.physRes = itemBonus("physRes");
+
+    return stats;
+  });
 
   const onEquip = (item: IItemEquipable): boolean => {
     if (equipment().find(eq => eq.equipSlot === item.equipSlot)) {
@@ -151,7 +210,7 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
 
   const playerValue: IPlayerContext = {
     attackRate, attackDamage, player: props.player,
-    equipment,
+    equipment, stats,
     onAddStat, onAddMastery, onEquip, onUnequip,
     recipes, getMasteryPerk, weaponMastery, onAddRecipe
   };

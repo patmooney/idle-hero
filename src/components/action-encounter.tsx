@@ -106,15 +106,28 @@ export const Action_Encounter: Component = () => {
       if (enc.experience) {
         playerCtx?.onAddStat("experience", enc.experience);
       }
+      const gold = storyCtx?.getGold(enc.gold);
+      if (gold) {
+        playerCtx?.onAddStat("gold", gold);
+      }
       const allDrops = storyCtx?.getDrops(enc)?.filter((drop) => !ctx?.state.prohibitedItems?.includes(drop));
       const drops = allDrops?.filter(
         (drop) => !!inventCtx?.addInventory(drop)
       );
-      if (drops?.length && shouldLog) {
+      if ((drops?.length || gold) && shouldLog) {
+        let dropText = "";
+        if (drops?.length) {
+          dropText = drops.map((d) => itemData[d]?.label).join(", ");
+          if (gold) {
+            dropText = `${dropText} & ${gold}g`;
+          }
+        } else if (gold) {
+          dropText = `${gold}g`;
+        }
         ctx?.onLog(
           <>
             It dropped:
-            <span class="font-bold m-1">{/*@once*/drops?.map((d) => itemData[d]?.label).join(", ")}</span>
+            <span class="font-bold m-1">{/*@once*/dropText}</span>
           </>, "drop"
         );
       }

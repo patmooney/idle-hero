@@ -32,24 +32,22 @@ export const Story_Dialogue: Component = () => {
   });
   return (
     <div class="flex flex-col gap-5 p-2 h-full overflow-y-auto">
-      <Show when={storyCtx?.story()?.type !== "encounter"}>
-        <Show when={options().length} fallback={<div class="text-gray-500">Nothing here...</div>}>
-          <For each={options()}>{
-            (opt) => <div
-              class="w-full border content-center h-12 text-lg font-bold flex flex-col justify-center"
-              onClick={() => !opt.isDisabled && onClick(opt)}
-              classList={{
-                "text-gray-500": opt.isDisabled,
-                  "cursor-pointer": !opt.isDisabled
-              }}
-            >
-              {opt.label}
-              <Show when={opt.subtext}>
-                <span class="text-xs text-gray-400">{opt.subtext}</span>
-              </Show>
-            </div>
-            }</For>
-        </Show>
+      <Show when={options().length} fallback={<div class="text-gray-500">Nothing here...</div>}>
+        <For each={options()}>{
+          (opt) => <div
+            class="w-full border content-center h-12 text-lg font-bold flex flex-col justify-center"
+            onClick={() => !opt.isDisabled && onClick(opt)}
+            classList={{
+              "text-gray-500": opt.isDisabled,
+                "cursor-pointer": !opt.isDisabled
+            }}
+          >
+            {opt.label}
+            <Show when={opt.subtext}>
+              <span class="text-xs text-gray-400">{opt.subtext}</span>
+            </Show>
+          </div>
+          }</For>
       </Show>
       <Show when={storyCtx?.story()?.name !== DEFAULT_STORY}>
         <div class="flex flex-row mt-auto gap-2">
