@@ -1,4 +1,5 @@
 import type { IEncounter, IOption, IStory } from "../types";
+import { generateStory } from "./generated";
 
 const forestEncounters: IEncounter[] = [
   {
@@ -106,7 +107,10 @@ const forest: IStory[] = [
     name: "story_forest_3",
     label: "welcome to the deep forest",
     type: "dialogue",
-    description: "You made it!"
+    description: "You made it!",
+    options: [
+      { label: "Endless fight", action: (_1, _2, _3, storyCtx) => storyCtx.onStory(generateStory(0)) }
+    ]
   }
 ];
 

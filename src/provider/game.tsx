@@ -1,5 +1,5 @@
 import { Accessor, batch, createContext, createSignal, JSXElement, onMount, ParentComponent, Setter, Show } from "solid-js";
-import type { IGameState, ILogItem, IPlayer, LogType } from "../data/types";
+import type { IGameState, IItem, ILogItem, IPlayer, LogType } from "../data/types";
 import { unstore, store } from "../utils/store";
 import { createStore, SetStoreFunction, Store, unwrap } from "solid-js/store";
 import { BASE_MAX_HEALTH, DEFAULT_STORY, MAX_CATCHUP_MS, MAX_INVENT, MIN_TICK_TIME_MS, TICKS_IN_YEAR } from "../utils/constants";
@@ -8,6 +8,7 @@ import { PlayerProvider } from "./player";
 import { StoryProvider } from "./story";
 
 import storyData from "../data/story";
+import itemData from "../data/item";
 
 export interface IGameContext {
   state: Store<IGameState>;
@@ -22,6 +23,9 @@ export interface IGameContext {
   setNav: Setter<string[]>;
   onLog: (msg: string | JSXElement, type: LogType) => void;
   log: Accessor<ILogItem[]>;
+
+  onCreateItem: (item: IItem) => void;
+  getItemData: (name: string) => IItem | undefined;
 
   onClearState: () => void;
 }
@@ -54,6 +58,9 @@ const defaultState: IGameState = {
   blockedEncounters: [],
   markers: [],
 }
+
+
+// TODO - clean up unique items which have been dropped from the state to reduce memory/storage
 
 export const GameContext = createContext<IGameContext>();
 
@@ -134,6 +141,14 @@ export const Game: ParentComponent = (props) => {
     }
   });
 
+  const cleanUniqueItems = () => {
+    const allItems = [...state.stash.map((i) => i?.name), ...player.equipment, ...state.inventory.map((i) => i?.name)].filter(Boolean) as string[];
+    setState(
+      "uniqueItems",
+      state.uniqueItems?.filter((i) => allItems.includes(i.name))
+    );
+  };
+
   const loadState = () => {
     const state = unstore<IState>(STATE_STORE_KEY);
     if (state) {
@@ -176,6 +191,7 @@ export const Game: ParentComponent = (props) => {
 
   const saveState = () => {
     console.log("Saving...");
+    cleanUniqueItems();
     const toSave: IState = {
       player: unwrap(player),
       state: unwrap(state),
@@ -245,11 +261,19 @@ export const Game: ParentComponent = (props) => {
     setLog([...log().slice(Math.min(log()?.length - 999, 0)), item]);
   }
 
+  const onCreateItem = (item: IItem) => {
+    setState("uniqueItems", [...(state.uniqueItems ?? []), item]);
+  };
+
+  const getItemData = (name: string): IItem | undefined => {
+    return state.uniqueItems?.find((i) => i.name === name) ?? itemData[name];
+  };
+
   const value: IGameContext = {
     state, setState,
     year, startActivity, endActivity,
     onNavigate, nav, onLog, log, pause, setNav,
-    onClearState
+    onClearState, onCreateItem, getItemData
   };
 
   return (

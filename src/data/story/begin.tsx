@@ -2,7 +2,6 @@ import { IStory } from "../types";
 import { Speech } from "./format";
 
 import itemData from "../item";
-import {generateStory} from "./generated";
 
 const story: IStory[] = [
   {
@@ -14,8 +13,7 @@ const story: IStory[] = [
       { label: "Visit Farm", goto: "story_farmer_1" },
       { label: "Leave the town", goto: "story_forest_1" },
       { label: "Merchants", goto: "story_town_merchants_1" },
-      { label: "Home", goto: "story_home_1" },
-      { label: "Generated", action: (_1, _2, _3, storyCtx) => storyCtx.onStory(generateStory(0)) }
+      { label: "Home", goto: "story_home_1" }
     ]
   },
   {
@@ -104,11 +102,11 @@ const story: IStory[] = [
       {
         name: "enc_scarecrow_1",
         label: "Scarecrow",
-        health: 10,
+        health: 5,
         chance: 1,
         experience: 10,
         drops: [
-          { name: "hay_1", chance: 0.5 },
+          { name: "hay_1", chance: 1 },
           { name: "food_worm_1", chance: 1 },
           { name: "recipe_hay_hand_1", chance: 0.05 },
           { name: "recipe_hay_head_1", chance: 0.05 },

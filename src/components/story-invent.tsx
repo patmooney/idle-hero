@@ -6,8 +6,6 @@ import { PlayerContext } from "../provider/player";
 import { GameContext } from "../provider/game";
 import { StoryContext } from "../provider/story";
 
-import itemData from "../data/item";
-
 export const Story_Invent: Component = () => {
   const gameCtx = useContext(GameContext);
   const inventCtx = useContext(InventoryContext);
@@ -28,13 +26,16 @@ export const Story_Invent: Component = () => {
     if (idx < 0) {
       return;
     }
-    const item = inventCtx?.inventory().at(idx);
-    return item ? { item: itemData[item.name], count: item.count } : null;
+    const invItem = inventCtx?.inventory().at(idx);
+    const item = invItem ? gameCtx?.getItemData(invItem.name) : undefined;
+    if (invItem && item) {
+      return { item, count: invItem.count };
+    }
   });
 
   const onUse = () => {
     const item = selectedItem();
-    if (!item) {
+    if (!item?.item) {
       return;
     }
     if (!gameCtx || !inventCtx || !playerCtx || !storyCtx) {
@@ -60,7 +61,7 @@ export const Story_Invent: Component = () => {
 
   const onRemove = (count: number) => {
     const item = selectedItem();
-    if (!item) {
+    if (!item?.item) {
       return;
     }
     inventCtx?.removeInventory(item.item.name, count);
@@ -69,11 +70,18 @@ export const Story_Invent: Component = () => {
     }
   };
 
+  const onQuickDrop = (item: InventItem) => {
+    if (!item) {
+      return;
+    }
+    inventCtx?.removeInventory(item.name, item.count);
+  };
+
   const canDrop = createMemo(() => {
     if (!selectedItem()) {
       return false;
     }
-    if (selectedItem()?.item.category === "unique") {
+    if (selectedItem()?.item?.category === "unique") {
       return false;
     }
     return true;
@@ -88,7 +96,7 @@ export const Story_Invent: Component = () => {
       ? inventCtx?.inventory().reduce<number>((acc, i) => i?.name === item.item.name ? acc + (i!.count ?? 0) : acc, 0) ?? 0
       : count;
 
-    if (item) {
+    if (item?.item) {
       inventCtx?.addStash(item.item.name, count);
     };
   };
@@ -100,7 +108,7 @@ export const Story_Invent: Component = () => {
     <div class="h-full relative">
       <div class="flex flex-col gap-2 h-7/8 overflow-auto p-2" onClick={() => setSelected(undefined)}>
         <For each={inventCtx?.inventory() ?? []}>{
-          (item, idx) => <InventorySlot item={item} onSelect={() => onSelect(idx())} />
+          (item, idx) => <InventorySlot item={item} onSelect={() => onSelect(idx())} onDrop={() => onQuickDrop(item)} />
         }</For>
       </div>
       <Show when={selectedItem()}>
@@ -108,7 +116,7 @@ export const Story_Invent: Component = () => {
           <div class="flex flex-col gap-2">
             <div class="flex flex-row justify-center relative">
               <span class="absolute left-0 top-0 font-bold cursor-pointer border-2 rounded-xl px-2 hover:bg-white hover:text-black" onClick={() => setSelected(undefined)}>X</span>
-              <div class="font-bold">{selectedItem()?.item.label} ({selectedItem()?.count})</div>
+              <div class="font-bold">{selectedItem()?.item.label} [{selectedItem()?.count} / {selectedItem()?.item.maxStack ?? 1}]</div>
             </div>
             <Show when={selectedItem()!.item.stats}>
               <div class="text-sm">{
@@ -155,9 +163,12 @@ export const Story_Invent: Component = () => {
 interface IInventorySlotProps {
   item: InventItem | null,
   onSelect: () => void;
+  onDrop?: () => void;
 }
 
 export const InventorySlot: Component<IInventorySlotProps> = (props) => {
+  const gameCtx = useContext(GameContext);
+
   const onClick = (e: MouseEvent) => {
     e.stopPropagation();
     props.onSelect();
@@ -167,7 +178,7 @@ export const InventorySlot: Component<IInventorySlotProps> = (props) => {
     if (!props.item) {
       return null;
      }
-    return itemData[props.item.name];
+    return gameCtx?.getItemData(props.item.name);
   });
 
   const category = createMemo(() => {
@@ -191,8 +202,11 @@ export const InventorySlot: Component<IInventorySlotProps> = (props) => {
       <div class="border p-1 flex flex-row justify-between border-gray-700 text-gray-700">Empty</div>
     }>
       <div class="border p-1 cursor-pointer flex flex-col" onClick={onClick}>
-        <div class="flex flex-row justify-between">
-          <div>{item()!.label}</div>
+        <div class="flex flex-row justify-between items-center">
+          <div class="text-left">
+            <Show when={props.onDrop}><span class="text-red-700 text-xs mr-1 cursor-pointer" onClick={(e) => {e.stopPropagation(); props.onDrop!();}}>[drop]</span></Show>
+            {item()!.label}
+          </div>
           <div class="flex flex-row gap-2 items-center">
             <div
               class="text-sm"

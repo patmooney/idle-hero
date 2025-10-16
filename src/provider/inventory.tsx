@@ -1,11 +1,11 @@
-import { Accessor, batch, createContext, createEffect, createMemo, ParentComponent } from "solid-js";
+import { Accessor, batch, createContext, createEffect, createMemo, ParentComponent, useContext } from "solid-js";
 
-import itemData from "../data/item";
 import furnitureData from "../data/furniture";
 
 import { MAX_INVENT } from "../utils/constants";
 import { IGameState, InventItem } from "../data/types";
 import { SetStoreFunction, Store } from "solid-js/store";
+import { GameContext } from "./game";
 
 export interface IInventoryContext {
   addInventory: (item: string, count?: number) => number;
@@ -21,6 +21,8 @@ export const InventoryContext = createContext<IInventoryContext>();
 export const InventoryProvider: ParentComponent<{
   state: Store<IGameState>, setState: SetStoreFunction<IGameState>
 }> = (props) => {
+  const gameCtx = useContext(GameContext);
+
   const addInventory = (name: string, toAdd = 1): number => {
     const [newInvent, addedCount] = addToContainer(props.state.inventory, name, toAdd);
     if (addedCount > 0) {
@@ -90,11 +92,11 @@ export const InventoryProvider: ParentComponent<{
   };
 
   const addToContainer = (container: InventItem[], name: string, toAdd: number): [InventItem[], number] => {
-    if (!itemData[name]) {
+    const item = gameCtx?.getItemData(name);
+    if (!item) {
       console.warn("Invalid or not found item", name);
       return [container, 0];
     }
-    const item = itemData[name];
     if (!toAdd) {
       return [container, 0];
     }
@@ -156,11 +158,11 @@ export const InventoryProvider: ParentComponent<{
     if (!toRemove) {
       return [container, 0];
     }
-    if (!itemData[name]) {
+    const item = gameCtx?.getItemData(name)
+    if (!item) {
       console.warn("Invalid or not found name", name);
       return [container, 0];
     }
-    const item = itemData[name];
 
     const i = container.findLastIndex((inv) => inv?.name === item.name);
     if (i < 0) {

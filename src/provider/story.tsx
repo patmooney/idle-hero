@@ -1,11 +1,11 @@
 import { IDrop, IEncounter, IStory } from "../data/types";
-import itemData from "../data/item";
 import { Accessor, createContext, createEffect, createSignal, ParentComponent, Setter, useContext } from "solid-js";
 import { cumulateDrop } from "../utils/mastery";
 import storyData from "../data/story";
 import { DEFAULT_STORY } from "../utils/constants";
 import { PlayerContext } from "./player";
 import { GameContext } from "./game";
+import { InventoryContext } from "./inventory";
 
 export interface IStoryContext {
   story: Accessor<IStory | undefined>;
@@ -23,6 +23,7 @@ export const StoryContext = createContext<IStoryContext>();
 export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory: Setter<string> }> = (props) => {
   const game = useContext(GameContext);
   const player = useContext(PlayerContext);
+  const invent = useContext(InventoryContext);
 
   const [story, setStory] = createSignal<IStory>();
 
@@ -50,7 +51,7 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
       return taskEncounter;
     }
     if (typeof s.encounters === "function") {
-      return s.encounters();
+      return s.encounters(game!, invent!, player!, value);
     }
     const rand = Math.random();
     if (s.type !== "encounter" || !s.encounters?.length) {
@@ -97,7 +98,7 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
     }
     return dropped?.map(
       (drop) => {
-        const item = itemData[drop.name];
+        const item = game?.getItemData(drop.name);
         if (!item) {
           console.error(`Unable to find drop ${drop.name}`);
           return undefined;
@@ -129,12 +130,10 @@ export const StoryProvider: ParentComponent<{ story: Accessor<string>, setStory:
   };
 
   const onStory = (story: IStory) => {
-    console.log({ story });
     game?.setNav([...(game?.nav() ?? []), story.name]);
     props.setStory(story.name);
     setStory(story);
   };
-
 
   const value: IStoryContext = {
     story, getEncounter, getDamage, getDrops, getItems, onTask, getGold, onStory

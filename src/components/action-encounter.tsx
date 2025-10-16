@@ -6,8 +6,6 @@ import { GameContext } from "../provider/game";
 import { PlayerContext } from "../provider/player";
 import { InventoryContext } from "../provider/inventory";
 
-import itemData from "../data/item";
-
 export const Action_Encounter: Component = () => {
   const ctx = useContext(GameContext);
   const storyCtx = useContext(StoryContext);
@@ -117,7 +115,7 @@ export const Action_Encounter: Component = () => {
       if ((drops?.length || gold) && shouldLog) {
         let dropText = "";
         if (drops?.length) {
-          dropText = drops.map((d) => itemData[d]?.label).join(", ");
+          dropText = drops.map((d) => ctx?.getItemData(d)?.label).join(", ");
           if (gold) {
             dropText = `${dropText} & ${gold}g`;
           }

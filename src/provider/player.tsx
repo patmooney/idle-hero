@@ -45,7 +45,8 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
     smithing: 0,
     crafting: 0,
     woodcutting: 0,
-    cooking: 0
+    cooking: 0,
+    dagger: 0
   });
 
   const recipes = createMemo(() => {
@@ -75,7 +76,7 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
 
   const equipment = createMemo(() => {
     return props.player.equipment?.map(
-      (name) => itemData[name] as IItemEquipable
+      (name) => gameCtx?.getItemData(name) as IItemEquipable
     ) ?? [];
   });
 
@@ -139,6 +140,10 @@ export const PlayerProvider: ParentComponent<{ player: Store<IPlayer>, setPlayer
     if (stat === "experience" && getLevel(newVal) > getLevel(oldVal)) {
       gameCtx?.setState("points", (gameCtx.state.points ?? 0) + 1);
       gameCtx?.onLog("You have levels up! +1 attr. points", "meta");
+      batch(() => {
+        props.setPlayer("stats", "maxHealth", (props.player.stats.maxHealth ?? 10) + 5);
+        props.setPlayer("stats", "health", props.player.stats.health + 5);
+      });
     }
 
     props.setPlayer("stats", stat, newVal);

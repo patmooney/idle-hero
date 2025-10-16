@@ -1,6 +1,5 @@
 import { Component, createMemo, createSignal, For, Show, useContext } from "solid-js";
 
-import itemData from "../data/item";
 import { Button } from "./Button";
 import { InventoryContext } from "../provider/inventory";
 import { GameContext } from "../provider/game";
@@ -23,8 +22,11 @@ export const Story_Stash: Component = () => {
     if (idx < 0) {
       return;
     }
-    const item = inventCtx?.stash().at(idx);
-    return item ? { item: itemData[item.name], count: item.count } : null;
+    const invItem = inventCtx?.stash().at(idx);
+    const item = invItem ? gameCtx?.getItemData(invItem.name) : undefined;
+    if (invItem && item) {
+      return { item, count: invItem.count };
+    }
   });
 
 

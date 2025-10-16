@@ -1,8 +1,8 @@
 export const LEVEL_EXP_BASE = 80;
-export const MASTERY_EXP_BASE = 30;
+export const MASTERY_EXP_BASE = 10;
 export const LEVEL_EXPONENT = 1.7;
 export const MAX_INVENT = 20;
-export const BASE_ATTACK_DELAY = 50;
+export const BASE_ATTACK_DELAY = 40;
 export const MIN_TICK_TIME_MS = 100;
 export const MAX_MASTERY = 500;
 export const MAX_CATCHUP_MS = 12 * 60 * 60 * 1000;

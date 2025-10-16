@@ -6,8 +6,6 @@ import { GameContext } from "../provider/game";
 import { InventoryContext } from "../provider/inventory";
 import { PlayerContext } from "../provider/player";
 
-import itemData from "../data/item";
-
 export const Action_Task: Component = () => {
   const gameCtx = useContext(GameContext);
   const inventCtx = useContext(InventoryContext);
@@ -94,7 +92,7 @@ export const Action_Task: Component = () => {
       );
 
     if (drops?.length) {
-      const labels = drops.map((d) => itemData[d]?.label ?? "Unknown");
+      const labels = drops.map((d) => gameCtx?.getItemData(d)?.label ?? "Unknown");
       gameCtx?.onLog(
         <>
           You gained:
